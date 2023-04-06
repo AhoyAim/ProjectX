@@ -6,6 +6,7 @@ using UnityEngine.AI;
 public class AI : MonoBehaviour
 {
     GirlController girlController;
+    CapsuleCollider girlCollider;
     NavMeshAgent ai;
     Animator animator;
     int animIDSpeed;
@@ -17,6 +18,7 @@ public class AI : MonoBehaviour
     public float awakeDistance;
     public float runSpeed;
     public float walkSpeed;
+    public float toSearchAgentConfsilictOffset = 0.1f;
 
     Vector3 toPlayerDirection;
     
@@ -27,12 +29,14 @@ public class AI : MonoBehaviour
         girlTransform = transform;
         animator = GetComponent<Animator>();
         animIDSpeed = Animator.StringToHash("Speed");
+        girlCollider = GetComponent<CapsuleCollider>();
     }
 
     
     void Update()
     {
-        if(!girlController.isNaked)
+        Debug.Log(ai.pathStatus);
+        if (!girlController.isNaked)
         {
             ai.stoppingDistance = 0f;
             if(girlController.state == GirlController.STATE.ALERT)
@@ -48,12 +52,14 @@ public class AI : MonoBehaviour
                 if (NavMesh.SamplePosition(-2f * toPlayerDirection + girlTransform.position, out NavMeshHit hit, 2f, NavMesh.AllAreas))
                 {
                     ai.destination = hit.position;
-                   // Physics.Raycast()
+                    
+
+                   
 
                 }
                 else
                 {
-                    Debug.Log("<color red>Œo˜H‚ªhit‚µ‚Ä‚È‚¢‚æ</color>");
+                    
                     girlTransform.LookAt(playerTransform);
                 }
 
@@ -73,7 +79,7 @@ public class AI : MonoBehaviour
                     }
 
                 }
-                
+
             }
         }
         
