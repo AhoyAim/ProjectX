@@ -614,6 +614,8 @@ GameObject:
   - component: {fileID: 1670729702969618642}
   - component: {fileID: 1670729702969618643}
   - component: {fileID: 1670729702969618640}
+  - component: {fileID: 5814457737392578234}
+  - component: {fileID: 390850504}
   m_Layer: 10
   m_Name: Girl
   m_TagString: Girl
@@ -628,7 +630,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2012816571104354897}
-  m_LocalRotation: {x: 0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 2.786, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -693,7 +695,7 @@ NavMeshAgent:
   m_Height: 1.38
   m_BaseOffset: -0.11
   m_WalkableMask: 4294967295
-  m_ObstacleAvoidanceType: 0
+  m_ObstacleAvoidanceType: 4
 --- !u!114 &1670729702969618643
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -701,7 +703,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2012816571104354897}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4355a26105bef9d4c84e431930e21e1c, type: 3}
   m_Name: 
@@ -711,8 +713,9 @@ MonoBehaviour:
     m_Bits: 0
   playerTransform: {fileID: 0}
   awakeDistance: 10
-  runSpeed: 0
-  walkSpeed: 0
+  runSpeed: 3.5
+  walkSpeed: 2
+  toSearchAgentConfsilictOffset: 0.1
 --- !u!114 &1670729702969618640
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -729,6 +732,44 @@ MonoBehaviour:
   awakeDistance: 10
   isNaked: 0
   state: 0
+--- !u!114 &5814457737392578234
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2012816571104354897}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5b31395665b81345b760e84a6078c19, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerTransform: {fileID: 0}
+  awakeDistance: 0
+  isNaked: 0
+  state: 0
+--- !u!114 &390850504
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2012816571104354897}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b0ab237fe63fe3e4597ba2b85c5e9fbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  layerMask:
+    serializedVersion: 2
+    m_Bits: 0
+  playerTransform: {fileID: 0}
+  awakeDistance: 10
+  minRunawayTime: 2
+  maxRunawayTime: 5
+  runSpeed: 3.5
+  walkSpeed: 2
+  toSearchAgentConfsilictOffset: 0.2
 --- !u!1 &2172011709400242758
 GameObject:
   m_ObjectHideFlags: 0

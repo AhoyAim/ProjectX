@@ -11,12 +11,17 @@ public class Dev_AI : MonoBehaviour
     NavMeshAgent ai;
     Animator animator;
     int animIDSpeed;
+    bool isRunaway;
 
     public LayerMask layerMask;
 
     public Transform playerTransform;
     Transform girlTransform;
     public float awakeDistance;
+    [Range(0.1f,2f)]
+    public float minRunawayTime = 0.1f;
+    [Range(2.1f,5f)]
+    public float maxRunawayTime = 2.1f;
     public float runSpeed;
     public float walkSpeed;
     public float toSearchAgentConfsilictOffset = 0.2f;
@@ -36,48 +41,22 @@ public class Dev_AI : MonoBehaviour
 
     void Update()
     {
-        Debug.Log(ai.pathStatus);
+        
         if (!girlController.isNaked)
         {
             ai.stoppingDistance = 0f;
-            if (girlController.state == GirlController.STATE.ALERT)
+            if(girlController.state == GirlController.STATE.ALERT && !isRunaway)
             {
                 ai.speed = runSpeed;
-
-
-                Debug.Log(ai.pathStatus);
-
-                Vector3 girlPosition = girlTransform.position;
-
-                toPlayerDirection = (playerTransform.position - girlPosition).normalized;
-                if (NavMesh.SamplePosition(-2f * toPlayerDirection + girlPosition, out NavMeshHit hit, 2f, NavMesh.AllAreas))
-                {
-                    ai.destination = hit.position;
-
-                    Vector3 toDestinationDirection = (hit.position - girlPosition).normalized;
-
-                    Debug.DrawRay(girlPosition, toDestinationDirection, Color.red, 0.5f);
-
-
-                    if (Physics.SphereCast(girlPosition, girlCollider.radius, toDestinationDirection, out RaycastHit hitinfo, 0.5f, LayerMask.GetMask("Girl")))
-                    {
-                        ai.speed = 0;
-                        Debug.Log("SphereCastがhit");
-                        ai.destination = girlPosition;
-                    }
-
-
-                }
-                else
-                {
-
-                    girlTransform.LookAt(playerTransform);
-                }
-
-
+                StartCoroutine(Runaway());
             }
+            
             if (girlController.state == GirlController.STATE.Normal)
             {
+                if(isRunaway)
+                {
+                    return;
+                }
                 ai.speed = walkSpeed;
 
 
@@ -102,6 +81,10 @@ public class Dev_AI : MonoBehaviour
             ai.destination = playerTransform.position;
         }
 
+        if(isRunaway)
+        {
+            animator.SetFloat(animIDSpeed, runSpeed);
+        }
         animator.SetFloat(animIDSpeed, ai.velocity.magnitude);
     }
 
@@ -111,5 +94,82 @@ public class Dev_AI : MonoBehaviour
         NavMeshTriangulation samplePointNavMeshTriangulation = NavMesh.CalculateTriangulation();
         int index = Random.Range(0, samplePointNavMeshTriangulation.indices.Length);
         return samplePointNavMeshTriangulation.vertices[index];
+    }
+    /// <summary>
+    /// Runawayフラグをtrueにし、agentを動かすコルーチン。コルーチンの終わりで Runawayフラグをfalseにする。
+    /// </summary>
+    /// <returns></returns>
+    IEnumerator Runaway()
+    {
+        isRunaway = true;
+        
+
+        bool isGetPosition = false;
+        int tryGetPositionCount = 0;
+        Vector3 girlPosition = girlTransform.position;
+
+        // 経路が取得できるか十回ループする
+        do
+        {
+            float r = Random.Range(-80, 80);
+            
+            toPlayerDirection = (playerTransform.position - girlPosition).normalized;
+            Vector3 direction = Quaternion.Euler(0, r, 0) * toPlayerDirection;
+
+            isGetPosition = NavMesh.SamplePosition(-20f * direction + girlPosition, out NavMeshHit hit, 2f, NavMesh.AllAreas);
+            if(isGetPosition)
+            {
+                ai.destination = hit.position;
+            }
+
+            tryGetPositionCount++;
+
+        } while (!isGetPosition && tryGetPositionCount <= 9);
+
+        
+        //　取得できなかった　＝＞　壁際の可能性が高い
+        if (!isGetPosition)
+        {
+            Debug.Log("hitなし");
+
+            //　より範囲を広げランダムな位置で経路がとれるか試す
+            Vector3 sorcePosition = new Vector3(girlTransform.position.x + Random.Range(-10f, 10f), girlTransform.position.y, girlTransform.position.z + Random.Range(-5f, 5f));
+            if (NavMesh.SamplePosition(sorcePosition, out NavMeshHit hit, 2f, NavMesh.AllAreas))
+            {
+                //　経路が取得できたなら、進行方向にplayerがいないかチェックする
+                Vector3 tempDestination = hit.position;
+                if (Physics.SphereCast(girlPosition, girlCollider.radius * 6, tempDestination - girlPosition, out RaycastHit hitinfo, 10f, LayerMask.GetMask("Character")))
+                {
+                    Debug.Log("navimesh取得できたがplayerがいる方向");
+                    //yield return null
+                }
+                else
+                {
+                    ai.destination = hit.position;
+                    yield return new WaitForSeconds(Random.Range(minRunawayTime, maxRunawayTime) / 3);
+                }
+
+            }
+            else
+            {
+                Debug.Log("navimesh取得できず");
+                //yield return null;
+            }
+
+        }
+        else
+        {
+            yield return new WaitForSeconds(Random.Range(minRunawayTime, maxRunawayTime));
+
+        }
+
+
+
+        
+
+
+        isRunaway = false;
+
+
     }
 }
