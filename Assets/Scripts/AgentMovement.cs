@@ -23,7 +23,7 @@ public class AgentMovement : MonoBehaviour
     public float maxRunawayTime = 2.1f;
     public float runSpeed;
     public float walkSpeed;
-    public float toSearchAgentConfsilictOffset = 0.2f;
+    
 
     Vector3 toPlayerDirection;
 

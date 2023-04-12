@@ -17,7 +17,7 @@ public class Dev_AI : MonoBehaviour
 
     public Transform playerTransform;
     Transform girlTransform;
-    public float awakeDistance;
+    public float awakeDistance = 2f;
     [Range(0.1f,2f)]
     public float minRunawayTime = 0.1f;
     [Range(2.1f,5f)]
