@@ -128,10 +128,12 @@ public class GirlController_ : MonoBehaviour
                     Vector3 toPlayerDirection = playerTransform.position - girlTransform.position;
                     if(Physics.SphereCast(sphereCastRoot.position, girlCollider.radius, toPlayerDirection, out RaycastHit hitinfo,20f))
                     {
-                        if(hitinfo.collider.CompareTag("Player"))
+                        // noticeDistance以上にplayerと離れてはいるが、直接視認できているとき
+                        if (hitinfo.collider.CompareTag("Player"))
                         {
                             currentState = State.Approch;
                         }
+                        // noticeDistance以上にplayerと離れていて、直接視認できないとき
                         else
                         {
                             currentState = State.Normal;
@@ -143,7 +145,7 @@ public class GirlController_ : MonoBehaviour
                     }
 
                 }
-                if((playerTransform.position - girlTransform.position).sqrMagnitude < atttackableDistance * atttackableDistance)
+                if(attackable)
                 {
                     currentState = State.Attack;
                 }
@@ -157,9 +159,17 @@ public class GirlController_ : MonoBehaviour
                 break;
 
             case State.Attack:
-                Debug.Log("Attackしたよ");
+                // 次のステートに遷移できないかチェック
+                if (!attackable)
+                {
+                    currentState = State.Approch;
+                }
 
-                currentState = State.Approch;
+                // 最終的にステートの遷移がなければ本来の処理を実行
+                if (currentState == State.Attack)
+                {
+                    Debug.Log("Attackしたよ");
+                }
                 break;
 
             case State.Vacuumed:
@@ -175,9 +185,9 @@ public class GirlController_ : MonoBehaviour
                 {
                     girlTransform.parent = null;
                     navMeshAgent.enabled = false;
-                    rb.isKinematic = false;
-                    rb.AddForce(playerTransform.forward * 1000);
-                    // currentState = State.Approch;
+                    // rb.isKinematic = false;
+                    rb.AddForce(playerTransform.forward * 1000, ForceMode.Impulse);
+                    currentState = State.Stan;
                 }
                 break;
                
@@ -209,6 +219,20 @@ public class GirlController_ : MonoBehaviour
         }
     }
     /// <summary>
+    /// playerとgirlの距離によりnoticeableフラグを更新する
+    /// </summary>
+    void CheckAttackable()
+    {
+        if ((playerTransform.position - girlTransform.position).sqrMagnitude < atttackableDistance * atttackableDistance)
+        {
+            attackable = true;
+        }
+        else
+        {
+            attackable = false;
+        }
+    }
+    /// <summary>
     /// playerとgirlの距離とアングルによりvacuumedableフラグを更新する
     /// </summary>
     void CheckVacuumedable()
@@ -233,6 +257,7 @@ public class GirlController_ : MonoBehaviour
     {
         CheckNoticeable();
         CheckVacuumedable();
+        CheckAttackable();
 
     }
 
