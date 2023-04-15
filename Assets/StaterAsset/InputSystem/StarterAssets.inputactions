@@ -260,42 +260,6 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
-                },
-                {
-                    "name": "Vaccum",
-                    "type": "Button",
-                    "id": "be0cb6f1-3504-44bd-af9e-8a8aebfdbebc",
-                    "expectedControlType": "Button",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "HyperVaccum",
-                    "type": "Button",
-                    "id": "328d3d22-f643-472e-b75f-917b8dab8130",
-                    "expectedControlType": "Button",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "VaccumRelease",
-                    "type": "Button",
-                    "id": "349d7164-1a9f-4a5c-94e4-c99ea17a1725",
-                    "expectedControlType": "Button",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "Attack",
-                    "type": "Button",
-                    "id": "91c89a50-0545-459d-b849-57f70f40bcc7",
-                    "expectedControlType": "Button",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -472,94 +436,6 @@
                     "processors": "",
                     "groups": "Gamepad",
                     "action": "Sprint",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "1873af40-1874-4477-8fbf-6fec5241a021",
-                    "path": "<Mouse>/leftButton",
-                    "interactions": "Press",
-                    "processors": "",
-                    "groups": "KeyboardMouse",
-                    "action": "Vaccum",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "7aad0d86-68b6-489d-bdca-a34ed1a31adf",
-                    "path": "<Gamepad>/buttonEast",
-                    "interactions": "Press",
-                    "processors": "",
-                    "groups": "Gamepad",
-                    "action": "Vaccum",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "bc35740e-0306-489f-95b4-723496779615",
-                    "path": "<Mouse>/leftButton",
-                    "interactions": "Hold",
-                    "processors": "",
-                    "groups": "KeyboardMouse",
-                    "action": "HyperVaccum",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "89801708-7ce1-4d07-8528-35b1099a796d",
-                    "path": "<Gamepad>/buttonEast",
-                    "interactions": "Hold",
-                    "processors": "",
-                    "groups": "Gamepad",
-                    "action": "HyperVaccum",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "6987e4eb-b85d-44c4-8ffb-e79666eae97e",
-                    "path": "<Mouse>/leftButton",
-                    "interactions": "Press(behavior=1)",
-                    "processors": "",
-                    "groups": "KeyboardMouse",
-                    "action": "VaccumRelease",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "55a15eb8-48b5-4600-b3d1-61dd7fde4429",
-                    "path": "<Gamepad>/buttonEast",
-                    "interactions": "Press(behavior=1)",
-                    "processors": "",
-                    "groups": "Gamepad",
-                    "action": "VaccumRelease",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "919cd5b7-f5b2-4136-ab87-d595b3194b85",
-                    "path": "<Mouse>/leftButton",
-                    "interactions": "MultiTap(tapCount=3)",
-                    "processors": "",
-                    "groups": "KeyboardMouse",
-                    "action": "Attack",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "2cd6e0f5-c283-4eab-aaa9-c0d85cd6318f",
-                    "path": "<Gamepad>/buttonEast",
-                    "interactions": "MultiTap(tapCount=3)",
-                    "processors": "",
-                    "groups": "Gamepad",
-                    "action": "Attack",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

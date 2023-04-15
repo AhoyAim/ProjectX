@@ -27,22 +27,22 @@ public class PantsGetter : MonoBehaviour
         //    pantsGetterCollider.enabled = false;
         //}
 
-        if(Input.GetButtonDown("Fire1"))
-        {
-            vccuming = true;
-        }
-        if(Input.GetButton("Fire1"))
-        {
-            foreach(var vaccumablegirlConroller in vaccumedableGirlControllers)
-            {
-                vaccumablegirlConroller.isNaked = true;
-                vaccumablegirlConroller.currentState = GirlController_.State.Vacuumed;
-            }
-        }
-        if(Input.GetButtonUp("Fire1"))
-        {
-            vccuming = false;
-        }
+        //if(Input.GetButtonDown("Fire1"))
+        //{
+        //    vccuming = true;
+        //}
+        //if(Input.GetButton("Fire1"))
+        //{
+        //    foreach(var vaccumablegirlConroller in vaccumedableGirlControllers)
+        //    {
+        //        vaccumablegirlConroller.isNaked = true;
+        //        vaccumablegirlConroller.currentState = GirlController_.State.Vacuumed;
+        //    }
+        //}
+        //if(Input.GetButtonUp("Fire1"))
+        //{
+        //    vccuming = false;
+        //}
     }
 
     //private void OnTriggerEnter(Collider other)

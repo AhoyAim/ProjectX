@@ -22,6 +22,8 @@ public class PlayerInputs : MonoBehaviour
     public bool cursorLocked = true;
     public bool cursorInputForLook = true;
 
+    public float Vaccumtime = 0f;
+
 #if ENABLE_INPUT_SYSTEM && STARTER_ASSETS_PACKAGES_CHECKED
     public void OnMove(InputAction.CallbackContext context)
     {
@@ -45,22 +47,7 @@ public class PlayerInputs : MonoBehaviour
     {
         SprintInput(context.performed);
     }
-    public void OnVaccum(InputAction.CallbackContext context)
-    {
-        VccumInput(context.performed);
-    }
-    public void OnHyperVaccum(InputAction.CallbackContext context)
-    {
-        HyperVccumInput(context.performed);
-    }
-    public void OnVaccumRelese(InputAction.CallbackContext context)
-    {
-        VccumReleaseInput(context.performed);
-    }
-    public void OnAttack(InputAction.CallbackContext context)
-    {
-        AttackInput(context.performed);
-    }
+   
 #endif
 
 
@@ -93,21 +80,37 @@ public class PlayerInputs : MonoBehaviour
     {
         Cursor.lockState = newState ? CursorLockMode.Locked : CursorLockMode.None;
     }
-    public void VccumInput(bool newState)
+    private void Update()
     {
-        vaccum = newState;
-    }
-    public void HyperVccumInput(bool newState)
-    {
-        hyperVaccum = newState;
-    }
-    public void VccumReleaseInput(bool newState)
-    {
-        vaccumRelese = newState;
-    }
-    public void AttackInput(bool newState)
-    {
-        attack = newState;
+        if(Input.GetButtonDown("Fire1"))
+        {
+            vaccum = true;
+            Vaccumtime = 0f;
+        }
+        else
+        {
+            vaccum = false;
+        }
+        if(Input.GetButton("Fire1"))
+        {
+            Vaccumtime += Time.deltaTime;
+            if(Vaccumtime >= 1f)
+            {
+                hyperVaccum = true;
+            }
+        }
+        if(Input.GetButtonUp("Fire1"))
+        {
+            vaccum = false;
+            hyperVaccum = false;
+            Vaccumtime = 0f;
+            vaccumRelese = true;
+
+        }
+        else
+        {
+            vaccumRelese = false;
+        }
     }
 }
 

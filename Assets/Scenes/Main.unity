@@ -4262,7 +4262,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 390850504, guid: 678f0190c3ce3894e99dcb013ff3ce68, type: 3}
       propertyPath: m_Enabled
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 390850504, guid: 678f0190c3ce3894e99dcb013ff3ce68, type: 3}
       propertyPath: playerTransform
@@ -4328,6 +4328,11 @@ PrefabInstance:
       propertyPath: playerTransform
       value: 
       objectReference: {fileID: 3893294198884216053}
+    - target: {fileID: 1670729702969618643, guid: 678f0190c3ce3894e99dcb013ff3ce68,
+        type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 1670729702969618643, guid: 678f0190c3ce3894e99dcb013ff3ce68,
         type: 3}
       propertyPath: playerTransform
@@ -7905,6 +7910,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: edd519344d1832547879843aa6f32f5a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &6982812147347158676 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5200315380570096948, guid: ca48c44437a38114185ceafb4580097b,
+    type: 3}
+  m_PrefabInstance: {fileID: 8652093223455230042}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0f2a8bdf5e8083d4ba06fe2f3dec3a9a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!65 &7016516635230251811
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -8811,6 +8828,16 @@ PrefabInstance:
         type: 3}
       propertyPath: m_NeverAutoSwitchControlSchemes
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4998566969913933337, guid: ca48c44437a38114185ceafb4580097b,
+        type: 3}
+      propertyPath: m_ActionEvents.Array.data[8].m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 6982812147347158676}
+    - target: {fileID: 4998566969913933337, guid: ca48c44437a38114185ceafb4580097b,
+        type: 3}
+      propertyPath: m_ActionEvents.Array.data[8].m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: OnVaccum
       objectReference: {fileID: 0}
     - target: {fileID: 5626590777963979951, guid: ca48c44437a38114185ceafb4580097b,
         type: 3}

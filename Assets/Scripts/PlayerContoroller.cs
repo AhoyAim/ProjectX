@@ -15,6 +15,20 @@ using UnityEngine.InputSystem;
 #endif
 public class PlayerContoroller : MonoBehaviour
 {
+    public enum State
+    {
+        Normal,
+        Jump,
+        Vaccum,
+        HyperVaccum,
+        VaccumRelease,
+        Attack,
+        Damaged,
+        Stan,
+        Dead
+    }
+    public State currentState;
+
     [Header("Player")]
     [Tooltip("Move speed of the character in m/s")]
     public float MoveSpeed = 2.0f;
@@ -156,27 +170,7 @@ public class PlayerContoroller : MonoBehaviour
 
     private void Update()
     {
-        // Input‚ÌŠm”F
-        if(_input.vaccum)
-        {
-            Debug.Log("vaccum");
-        }
-        if (_input.hyperVaccum)
-        {
-            Debug.Log("hyperVaccum");
-        }
-        if (_input.vaccumRelese)
-        {
-            Debug.Log("vaccumRelese");
-        }
-        if (_input.attack)
-        {
-            Debug.Log("attack");
-        }
-        if(_input.jump)
-        {
-            Debug.Log("Jump");
-        }
+        
 
 
         _hasAnimator = TryGetComponent(out _animator);
