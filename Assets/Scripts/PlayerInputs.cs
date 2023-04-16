@@ -23,6 +23,7 @@ public class PlayerInputs : MonoBehaviour
     public bool cursorInputForLook = true;
 
     public float Vaccumtime = 0f;
+    public PlayerContoroller playerContoroller;
 
 #if ENABLE_INPUT_SYSTEM && STARTER_ASSETS_PACKAGES_CHECKED
     public void OnMove(InputAction.CallbackContext context)
@@ -82,6 +83,11 @@ public class PlayerInputs : MonoBehaviour
     }
     private void Update()
     {
+        if(!playerContoroller.Grounded)
+        {
+            return;
+        }
+
         if(Input.GetButtonDown("Fire1"))
         {
             vaccum = true;

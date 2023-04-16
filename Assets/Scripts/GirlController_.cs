@@ -64,7 +64,7 @@ public class GirlController_ : MonoBehaviour
     private void Update()
     {
         UpDateFlags();
-
+        bool vaccumedNow = vacuumedable && pantsGetter.vccuming;
        
 
         switch (currentState)

@@ -2,6 +2,7 @@ using StarterAssets;
 using UnityEngine;
 #if ENABLE_INPUT_SYSTEM && STARTER_ASSETS_PACKAGES_CHECKED
 using UnityEngine.InputSystem;
+using UnityEngine.Windows;
 #endif
 
 /* Note: animations are called via the controller for both the character and capsule using animator null checks
@@ -18,7 +19,6 @@ public class PlayerContoroller : MonoBehaviour
     public enum State
     {
         Normal,
-        Jump,
         Vaccum,
         HyperVaccum,
         VaccumRelease,
@@ -138,6 +138,8 @@ public class PlayerContoroller : MonoBehaviour
         }
     }
 
+   
+
 
     private void Awake()
     {
@@ -166,18 +168,86 @@ public class PlayerContoroller : MonoBehaviour
         // reset our timeouts on start
         _jumpTimeoutDelta = JumpTimeout;
         _fallTimeoutDelta = FallTimeout;
+
+        _hasAnimator = TryGetComponent(out _animator);
+
+        currentState = State.Normal;
     }
 
     private void Update()
     {
-        
+        switch (currentState)
+        {
+            case State.Normal:
+                if(_input.vaccum)
+                {
+                    currentState = State.Vaccum;
+                    _animator.SetFloat(_animIDSpeed, 0);
+                }
+
+                if (currentState == State.Normal)
+                {
+                    JumpAndGravity();
+                    GroundedCheck();
+                    Move();
+                }
+                break;
+            case State.Vaccum:
+                if(_input.hyperVaccum)
+                {
+                    currentState = State.HyperVaccum;
+                }
+                if(_input.vaccumRelese)
+                {
+                    currentState = State.Normal;
+                }
+                
+                if(currentState == State.Vaccum)
+                {
+                    Debug.Log("Vaccum‚¾‚æ");
+                }
+
+                break;
+            case State.HyperVaccum:
+                if(_input.vaccumRelese)
+                {
+                    currentState = State.VaccumRelease;
+                }
+
+                if(currentState == State.HyperVaccum)
+                {
+                    Debug.Log("HyperVaccum‚¾‚æ");
+                    transform.Rotate(0, _input.move.x, 0);
+                }
+
+                break;
+            case State.VaccumRelease:
+                Debug.Log("VaccumRelease‚¾‚æ");
+
+                currentState = State.Normal;
+
+                break;
+            case State.Attack:
+                break;
+            case State.Damaged:
+                break;
+            case State.Stan:
+                break;
+            case State.Dead:
+                break;
+            default:
+                break;
+        }
 
 
-        _hasAnimator = TryGetComponent(out _animator);
 
-        JumpAndGravity();
-        GroundedCheck();
-        Move();
+
+
+
+
+        //JumpAndGravity();
+        //GroundedCheck();
+        //Move();
     }
 
     private void LateUpdate()
