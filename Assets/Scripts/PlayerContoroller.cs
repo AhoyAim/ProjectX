@@ -20,9 +20,9 @@ public class PlayerContoroller : MonoBehaviour
     public enum State
     {
         Normal,
-        Vaccum,
-        HyperVaccum,
-        VaccumRelease,
+        Vacuum,
+        HyperVacuum,
+        VacuumRelease,
         Attack,
         Damaged,
         Stan,
@@ -182,7 +182,7 @@ public class PlayerContoroller : MonoBehaviour
             case State.Normal:
                 if(_input.vaccum)
                 {
-                    currentState = State.Vaccum;
+                    currentState = State.Vacuum;
                     _animator.SetFloat(_animIDSpeed, 0);
                 }
 
@@ -193,11 +193,11 @@ public class PlayerContoroller : MonoBehaviour
                     Move();
                 }
                 break;
-            case State.Vaccum:
+            case State.Vacuum:
                 if(_input.hyperVaccum)
                 {
                     pantsGetter.OnVacuum();
-                    currentState = State.HyperVaccum;
+                    currentState = State.HyperVacuum;
                 }
                 if(_input.vaccumRelese)
                 {
@@ -205,27 +205,27 @@ public class PlayerContoroller : MonoBehaviour
                     pantsGetter.OffVacuum();
                 }
                 
-                if(currentState == State.Vaccum)
+                if(currentState == State.Vacuum)
                 {
                     pantsGetter.OnVacuum();
                     Debug.Log("Vaccum‚¾‚æ");
                 }
 
                 break;
-            case State.HyperVaccum:
+            case State.HyperVacuum:
                 if(_input.vaccumRelese)
                 {
-                    currentState = State.VaccumRelease;
+                    currentState = State.VacuumRelease;
                 }
 
-                if(currentState == State.HyperVaccum)
+                if(currentState == State.HyperVacuum)
                 {
                     Debug.Log("HyperVaccum‚¾‚æ");
                     transform.Rotate(0, _input.move.x, 0);
                 }
 
                 break;
-            case State.VaccumRelease:
+            case State.VacuumRelease:
                 Debug.Log("VaccumRelease‚¾‚æ");
 
                 currentState = State.Normal;

@@ -5,10 +5,10 @@ using UnityEngine;
 public class PantsGetter : MonoBehaviour
 {
     public PantsCalc pantsCalc;
-    public Collider pantsGetterCollider;
     public float vaccumableDistance = 2.25f;
     public float vaccumableAngle = 90f;
     public bool vacuuming = false;
+    public bool hyperVacuuming = false;
 
     HashSet<GirlController_> vaccumedableGirlControllers = null;
     private void Start()
@@ -18,88 +18,7 @@ public class PantsGetter : MonoBehaviour
     }
     private void Update()
     {
-        //if(Input.GetButtonDown("Fire1"))
-        //{
-        //    pantsGetterCollider.enabled = true;
-        //}
-        //if(Input.GetButtonUp("Fire1"))
-        //{
-        //    pantsGetterCollider.enabled = false;
-        //}
-
-        //if(Input.GetButtonDown("Fire1"))
-        //{
-        //    vccuming = true;
-        //}
-        //if(Input.GetButton("Fire1"))
-        //{
-        //    foreach(var vaccumablegirlConroller in vaccumedableGirlControllers)
-        //    {
-        //        vaccumablegirlConroller.isNaked = true;
-        //        vaccumablegirlConroller.currentState = GirlController_.State.Vacuumed;
-        //    }
-        //}
-        //if(Input.GetButtonUp("Fire1"))
-        //{
-        //    vccuming = false;
-        //}
     }
-
-    //private void OnTriggerEnter(Collider other)
-    //{
-    //    if (other.CompareTag("Girl"))
-    //    {
-    //        GirlController girl = other.gameObject.GetComponent<GirlController>();
-    //        if (!girl.isNaked)
-    //        {
-    //            girl.isNaked = true;
-    //            pantsCalc.GetPants();
-    //        }
-
-    //    }
-    //    if (other.CompareTag("Pants"))
-    //    {
-    //        Destroy(other.gameObject);
-    //        pantsCalc.GetPants();
-    //    }
-    //}
-    //private void OnTriggerExit(Collider other)
-    //{
-    //    if (other.CompareTag("Girl"))
-    //    {
-    //        GirlController girl = other.gameObject.GetComponent<GirlController>();
-    //        if (!girl.isNaked)
-    //        {
-    //            girl.isNaked = true;
-    //            pantsCalc.GetPants();
-    //        }
-
-    //    }
-    //    if (other.CompareTag("Pants"))
-    //    {
-    //        Destroy(other.gameObject);
-    //        pantsCalc.GetPants();
-    //    }
-    //}
-    //private void OnTriggerStay(Collider other)
-    //{
-    //    if(other.CompareTag("Girl"))
-    //    {
-    //        GirlController girl = other.gameObject.GetComponent<GirlController>();
-    //        if(!girl.isNaked)
-    //        {
-    //            girl.isNaked = true;
-    //            pantsCalc.GetPants();
-    //        }
-            
-    //    }
-    //    if (other.CompareTag("Pants"))
-    //    {
-    //        Destroy(other.gameObject);
-    //        pantsCalc.GetPants();
-    //    }
-    //}
-
     public void OnVacuum()
     {
         vacuuming = true;
@@ -113,9 +32,21 @@ public class PantsGetter : MonoBehaviour
         }
     }
 
+    public void OnHyoerVacuuming()
+    {
+        hyperVacuuming = true;
+        // girlÇà¯Ç¡í£ÇËë±ÇØÇÈìÆçÏÇé¿ëïÇ∑ÇÈ
+    }
+
+    public void OnVacuumRelease()
+    {
+
+    }
+
     public void OffVacuum()
     {
         vacuuming = false;
+        hyperVacuuming |= false;
     }
 
 
