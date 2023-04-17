@@ -18,6 +18,8 @@ public class GirlController_ : MonoBehaviour
         Damaged,
         Stan,
         Vacuumed,
+        HyperVacuumed,
+        BlownAway,
     }
     public State currentState;
     public bool isNaked = false;
@@ -42,6 +44,7 @@ public class GirlController_ : MonoBehaviour
     private bool noticeable;
     private bool vacuumedable;
     private bool attackable;
+    private bool isVaccumedNow;
     private Transform girlTransform;
     private Vector3 toPlayerDirection;
     private Rigidbody rb;
@@ -64,8 +67,9 @@ public class GirlController_ : MonoBehaviour
     private void Update()
     {
         UpDateFlags();
-        bool vaccumedNow = vacuumedable && pantsGetter.vccuming;
-       
+        CheckVaccumedAndDamaged();
+
+
 
         switch (currentState)
         {
@@ -178,17 +182,12 @@ public class GirlController_ : MonoBehaviour
                 {
                     navMeshAgent.ResetPath();
                 }
-                
-                girlTransform.parent = playerTransform;
-
-                if(!pantsGetter.vccuming)
+                if(!pantsGetter.vacuuming)
                 {
-                    girlTransform.parent = null;
-                    navMeshAgent.enabled = false;
-                    // rb.isKinematic = false;
-                    rb.AddForce(playerTransform.forward * 1000, ForceMode.Impulse);
-                    currentState = State.Stan;
+                    currentState = State.Normal;
                 }
+                
+                
                 break;
                
 
@@ -251,6 +250,13 @@ public class GirlController_ : MonoBehaviour
         }
     }
     /// <summary>
+    /// 現在吸引されているかどうかチェックする
+    /// </summary>
+    void CheckVaccumedNow()
+    {
+        isVaccumedNow = vacuumedable && pantsGetter.vacuuming;
+    }
+    /// <summary>
     /// 各種フラグを更新する
     /// </summary>
     void UpDateFlags()
@@ -258,7 +264,22 @@ public class GirlController_ : MonoBehaviour
         CheckNoticeable();
         CheckVacuumedable();
         CheckAttackable();
+        CheckVaccumedNow();
 
+    }
+
+    public void CheckVaccumedAndDamaged()
+    {
+        if(currentState == State.Stan)
+        {
+            return;
+        }
+
+        if(isVaccumedNow)
+        {
+            currentState = State.Vacuumed;
+        }
+        
     }
 
 

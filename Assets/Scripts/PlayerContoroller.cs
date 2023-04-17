@@ -16,6 +16,7 @@ using UnityEngine.Windows;
 #endif
 public class PlayerContoroller : MonoBehaviour
 {
+    public PantsGetter pantsGetter;
     public enum State
     {
         Normal,
@@ -195,15 +196,18 @@ public class PlayerContoroller : MonoBehaviour
             case State.Vaccum:
                 if(_input.hyperVaccum)
                 {
+                    pantsGetter.OnVacuum();
                     currentState = State.HyperVaccum;
                 }
                 if(_input.vaccumRelese)
                 {
                     currentState = State.Normal;
+                    pantsGetter.OffVacuum();
                 }
                 
                 if(currentState == State.Vaccum)
                 {
+                    pantsGetter.OnVacuum();
                     Debug.Log("Vaccum‚¾‚æ");
                 }
 

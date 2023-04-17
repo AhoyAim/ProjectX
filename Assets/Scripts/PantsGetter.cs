@@ -8,7 +8,7 @@ public class PantsGetter : MonoBehaviour
     public Collider pantsGetterCollider;
     public float vaccumableDistance = 2.25f;
     public float vaccumableAngle = 90f;
-    public bool vccuming = false;
+    public bool vacuuming = false;
 
     HashSet<GirlController_> vaccumedableGirlControllers = null;
     private void Start()
@@ -99,6 +99,24 @@ public class PantsGetter : MonoBehaviour
     //        pantsCalc.GetPants();
     //    }
     //}
+
+    public void OnVacuum()
+    {
+        vacuuming = true;
+        foreach(var girl in vaccumedableGirlControllers)
+        {
+            if(!girl.isNaked)
+            {
+                girl.isNaked = true;
+                pantsCalc.GetPants();
+            }
+        }
+    }
+
+    public void OffVacuum()
+    {
+        vacuuming = false;
+    }
 
 
 }
