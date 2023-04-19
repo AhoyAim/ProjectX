@@ -41,10 +41,6 @@ public class GirlController_ : MonoBehaviour
     private float vaccumedableDistance;
     private float vaccumedableAngle;
     private bool isRunaway;
-    private bool noticeable;
-    private bool vacuumedable;
-    private bool attackable;
-    private bool isVaccumedNow;
     private Transform girlTransform;
     private Vector3 toPlayerDirection;
     private Rigidbody rb;
@@ -66,7 +62,6 @@ public class GirlController_ : MonoBehaviour
 
     private void Update()
     {
-        UpDateFlags();
         CheckVaccumedAndDamaged();
 
 
@@ -74,124 +69,49 @@ public class GirlController_ : MonoBehaviour
         switch (currentState)
         {
             case State.Normal:
-                // 次のステートに遷移できないかチェック
-                if(noticeable)
-                {
-                    currentState = State.Notice;
-                }
-
-
-
-                // 最終的にステートの遷移がなければ本来の処理を実行
-                if(currentState == State.Normal)
-                {
-                    OnNormal();
-                }
+                OnNormal();
                 break;
-
 
             case State.Notice:
-                // 次のステートに遷移できないかチェック
-                if(isNaked)
-                {
-                    currentState = State.Approch;
-                }
-                else
-                {
-                    currentState = State.Runaway;
-                }
-
-
-                // 最終的にステートの遷移がなければ本来の処理を実行
-                if (currentState == State.Notice)
-                {
-                    Debug.Log("Noticeしたよ！");
-                }
+                OnNotice();
                 break;
-
 
             case State.Runaway:
-                // 次のステートに遷移できないかチェック
-                if(!isRunaway && !noticeable)
-                {
-                    currentState = State.Normal;
-                }
-
-                // 最終的にステートの遷移がなければ本来の処理を実行
-                if(currentState == State.Runaway)
-                {
-                    OnRunaway();
-                }
+                OnRunaway();
                 break;
 
-
             case State.Approch:
-                // 次のステートに遷移できないかチェック
-                if(!noticeable)
-                {
-                    Vector3 toPlayerDirection = playerTransform.position - girlTransform.position;
-                    if(Physics.SphereCast(sphereCastRoot.position, girlCollider.radius, toPlayerDirection, out RaycastHit hitinfo,20f))
-                    {
-                        // noticeDistance以上にplayerと離れてはいるが、直接視認できているとき
-                        if (hitinfo.collider.CompareTag("Player"))
-                        {
-                            currentState = State.Approch;
-                        }
-                        // noticeDistance以上にplayerと離れていて、直接視認できないとき
-                        else
-                        {
-                            currentState = State.Normal;
-                        }
-                    }
-                    else
-                    {
-                        currentState = State.Normal;
-                    }
-
-                }
-                if(attackable)
-                {
-                    currentState = State.Attack;
-                }
-
-
-                // 最終的にステートの遷移がなければ本来の処理を実行
-                if (currentState == State.Approch)
-                {
-                    OnApproch();
-                }
+                OnApproch();
                 break;
 
             case State.Attack:
-                // 次のステートに遷移できないかチェック
-                if (!attackable)
-                {
-                    currentState = State.Approch;
-                }
-
-                // 最終的にステートの遷移がなければ本来の処理を実行
-                if (currentState == State.Attack)
-                {
-                    Debug.Log("Attackしたよ");
-                }
+                OnAttack();
                 break;
 
             case State.Vacuumed:
-                Debug.Log("Vaccumedされてます");
-                if(navMeshAgent.enabled)
-                {
-                    navMeshAgent.ResetPath();
-                }
-                if(!pantsGetter.vacuuming)
-                {
-                    currentState = State.Normal;
-                }
-                
-                
+                OnVacuumed();
                 break;
+
+            case State.HyperVacuumed:
+                if((!pantsGetter.vacuuming))
+                {
+                    currentState = State.BlownAway;
+                    this.tag = "吹き飛ばされているやつ用のタグ";
+                }
                
 
+                if(currentState == State.BlownAway)
+                {
+                    navMeshAgent.enabled = false;
+                    rb.isKinematic = false;
+                    girlCollider.isTrigger = false;
+                }
+                break;
 
+            case State.BlownAway:
+
+                // OnBlownAway() girlタグかEnvironmentタグに当たると停止する。
+                break;
             default:
                 break;
         }
@@ -206,68 +126,61 @@ public class GirlController_ : MonoBehaviour
     /// <summary>
     /// playerとgirlの距離によりnoticeableフラグを更新する
     /// </summary>
-    void CheckNoticeable()
+    bool CheckNoticeable()
     {
         if ((playerTransform.position - girlTransform.position).sqrMagnitude < noticeDistance * noticeDistance)
         {
-            noticeable = true;
+            return true;
         }
         else
         {
-            noticeable = false;
+            return false;
         }
     }
     /// <summary>
     /// playerとgirlの距離によりnoticeableフラグを更新する
     /// </summary>
-    void CheckAttackable()
+    bool CheckAttackable()
     {
         if ((playerTransform.position - girlTransform.position).sqrMagnitude < atttackableDistance * atttackableDistance)
         {
-            attackable = true;
+            return true;
         }
         else
         {
-            attackable = false;
+            return false;
         }
     }
     /// <summary>
     /// playerとgirlの距離とアングルによりvacuumedableフラグを更新する
     /// </summary>
-    void CheckVacuumedable()
+    bool CheckVacuumedable()
     {
         Vector3 toGirlVector = girlTransform.position - playerTransform.position;
         if (toGirlVector.sqrMagnitude < vaccumedableDistance * vaccumedableDistance 
             && Vector3.Angle(playerTransform.forward, toGirlVector) <= vaccumedableAngle / 2)
         {
-            vacuumedable = true;
             Player_GirlManager.instance.vaccumedableGirlControllers.Add(this);
+            return true;
         }
         else
         {
-            vacuumedable = false;
             Player_GirlManager.instance.vaccumedableGirlControllers.Remove(this);
+            return false;
         }
     }
     /// <summary>
     /// 現在吸引されているかどうかチェックする
     /// </summary>
-    void CheckVaccumedNow()
+    bool CheckVaccumedNow()
     {
-        isVaccumedNow = vacuumedable && pantsGetter.vacuuming;
+        return CheckVacuumedable() && pantsGetter.vacuuming;
     }
+   
+  
     /// <summary>
-    /// 各種フラグを更新する
+    /// Anystateから遷移できるVacuumステートとDamagedステートへのフラグをチェックし可能なら遷移する
     /// </summary>
-    void UpDateFlags()
-    {
-        CheckNoticeable();
-        CheckVacuumedable();
-        CheckAttackable();
-        CheckVaccumedNow();
-
-    }
-
     public void CheckVaccumedAndDamaged()
     {
         if(currentState == State.Stan)
@@ -275,7 +188,7 @@ public class GirlController_ : MonoBehaviour
             return;
         }
 
-        if(isVaccumedNow)
+        if(CheckVaccumedNow())
         {
             currentState = State.Vacuumed;
         }
@@ -296,7 +209,7 @@ public class GirlController_ : MonoBehaviour
     }
 
     /// <summary>
-    /// Runawayフラグをtrueにし、agentを動かすコルーチン。コルーチンの終わりで Runawayフラグをfalseにする。
+    /// isRunawayフラグをtrueにし、agentを動かすコルーチン。コルーチンの終わりで isRunawayフラグをfalseにする。if(isRunaway)の時だけ StartCoroutineし、コルーチンが重複しないようしてください。また、最後に次のステートに遷移できないかチェックも行っています。
     /// </summary>
     /// <returns></returns>
     IEnumerator Runaway()
@@ -364,6 +277,63 @@ public class GirlController_ : MonoBehaviour
         }
 
         isRunaway = false;
+
+        // 次のステートに遷移できないかチェック
+        if(!CheckNoticeable())
+        {
+            currentState = State.Normal;
+        }
+
+    }
+    #endregion
+
+    /// <summary>
+    /// VcuumedステートやVacuumReleaseステートに
+    /// </summary>
+    public void PrepareVacuumed()
+    {
+        if (navMeshAgent.enabled)
+        {
+            navMeshAgent.ResetPath();
+            navMeshAgent.enabled = false;
+            rb.isKinematic = false;
+            girlCollider.isTrigger = false;
+        }
+    }
+    /// <summary>
+    /// Normalステート時のNavMeshAgentの立ち振る舞い
+    /// </summary>
+    public void OnNormal()
+    {
+        navMeshAgent.speed = walkSpeed;
+        if ((Random.Range(0, 5000) < 20))
+        {
+            navMeshAgent.destination = GetSamplePointNavMesh();
+        }
+        // 次のステートに遷移できないかチェック
+        if (CheckNoticeable())
+        {
+            currentState = State.Notice;
+        }
+    }
+
+    /// <summary>
+    /// Noticeステート時の立ち振る舞い
+    /// </summary>
+    void OnNotice()
+    {
+        Debug.Log("Noticeだよーん");// ここにリアクションのアニメーションを実装する
+
+        // 次のステートに遷移できないかチェック
+        if (isNaked)
+        {
+            currentState = State.Approch;
+        }
+        else
+        {
+            currentState = State.Runaway;
+        }
+
     }
 
     /// <summary>
@@ -374,9 +344,10 @@ public class GirlController_ : MonoBehaviour
         navMeshAgent.speed = runSpeed;
         if (!isRunaway)
         {
-            StartCoroutine(Runaway());
-        }
+            StartCoroutine(Runaway());　// Runaway()内に次のステートに遷移できないかチェックを実装してます
 
+        }
+       
     }
     /// <summary>
     /// Approchステート時のNavMeshAgentの立ち振る舞い
@@ -386,22 +357,100 @@ public class GirlController_ : MonoBehaviour
         navMeshAgent.speed = runSpeed;
         navMeshAgent.stoppingDistance = 1.5f;
         navMeshAgent.destination = playerTransform.position;
+
+        // 次のステートに遷移できないかチェック
+        if (CheckAttackable())
+        {
+            currentState = State.Attack;
+        }
+        else if(!CheckNoticeable())
+        {
+            Vector3 toPlayerDirection = playerTransform.position - girlTransform.position;
+            if (Physics.SphereCast(sphereCastRoot.position, girlCollider.radius, toPlayerDirection, out RaycastHit hitinfo, 20f))
+            {
+                // noticeDistance以上にplayerと離れてはいるが、直接視認できているとき
+                if (hitinfo.collider.CompareTag("Player"))
+                {
+                    currentState = State.Approch;
+                }
+                // noticeDistance以上にplayerと離れていて、直接視認できないとき
+                else
+                {
+                    currentState = State.Normal;
+                }
+            }
+            else
+            {
+                currentState = State.Normal;
+            }
+        }
+    }
+    /// <summary>
+    ///  Attackステート時の立ち振る舞い
+    /// </summary>
+    void OnAttack()
+    {
+        Debug.Log("Attackだよーん");// ここにAttackアニメーションに関する実装をするアニメーションイベントでコライダーをOnし、接触判定する
+
+        // 次のステートに遷移できないかチェック
+        if (!CheckAttackable())
+        {
+            currentState = State.Approch;
+        }
     }
 
     /// <summary>
-    /// Normalステート時のNavMeshAgentの立ち振る舞い
+    /// Vacuumedステート時の立ち振る舞い
     /// </summary>
-    public void OnNormal()
+    void OnVacuumed()
     {
-        if (isRunaway)
+        Debug.Log("Vaccumedされてます"); //Vacuumedアニメを再生する
+        PrepareVacuumed();
+
+        if (pantsGetter.hyperVacuuming)
         {
-            return;
+            currentState = State.HyperVacuumed;
         }
-        navMeshAgent.speed = walkSpeed;
-        if ((Random.Range(0, 5000) < 20))
+        else if (!pantsGetter.vacuuming)
         {
-            navMeshAgent.destination = GetSamplePointNavMesh();
+            currentState = State.Stan;
         }
     }
-    #endregion
+
+    void OnHyperVacuumed()
+    {
+        Debug.Log("HyperVaccumedされてます"); //HyperVacuumedアニメを再生する
+        PrepareVacuumed();
+
+        girlTransform.parent = playerTransform;
+
+        if(pantsGetter.vacuumReieasing)
+        {
+            currentState = State.BlownAway;
+        }
+    }
+
+    void OnBlownAway()
+    {
+        this.tag = "BlownAway";
+
+        
+        
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        if(currentState == State.BlownAway)
+        {
+            if(collision.gameObject.CompareTag("Girl") || collision.gameObject.CompareTag("Environment"))
+            {
+                rb.velocity = Vector3.zero;
+                collision.gameObject.GetComponent<GirlController_>().currentState = State.Damaged;
+            }
+        }
+    }
+
+
+
+
 }

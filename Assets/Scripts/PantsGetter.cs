@@ -9,6 +9,7 @@ public class PantsGetter : MonoBehaviour
     public float vaccumableAngle = 90f;
     public bool vacuuming = false;
     public bool hyperVacuuming = false;
+    public bool vacuumReieasing = false;
 
     HashSet<GirlController_> vaccumedableGirlControllers = null;
     private void Start()
@@ -40,7 +41,7 @@ public class PantsGetter : MonoBehaviour
 
     public void OnVacuumRelease()
     {
-
+        
     }
 
     public void OffVacuum()
