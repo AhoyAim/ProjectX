@@ -1,3 +1,4 @@
+
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -38,9 +39,11 @@ public class GirlController_ : MonoBehaviour
     private NavMeshAgent navMeshAgent;
     private Animator animator;
     private int animIDSpeed;
+    private float girlColliderRdius;
     private float vaccumedableDistance;
     private float vaccumedableAngle;
     private bool isRunaway;
+    private bool isEnable;
     private Transform girlTransform;
     private Vector3 toPlayerDirection;
     private Rigidbody rb;
@@ -50,6 +53,7 @@ public class GirlController_ : MonoBehaviour
         currentState = State.Normal;
 
         girlCollider = GetComponent<CapsuleCollider>();
+        girlColliderRdius = girlCollider.radius;
         navMeshAgent = GetComponent<NavMeshAgent>();
         animator = GetComponent<Animator>();
         animIDSpeed = Animator.StringToHash("Speed");
@@ -57,6 +61,8 @@ public class GirlController_ : MonoBehaviour
         vaccumedableAngle = pantsGetter.vaccumableAngle;
         girlTransform = transform;
         rb = GetComponent<Rigidbody>();
+        rb.isKinematic = true;
+        isEnable = true;
 
     }
 
@@ -92,25 +98,20 @@ public class GirlController_ : MonoBehaviour
                 OnVacuumed();
                 break;
 
-            case State.HyperVacuumed:
-                if((!pantsGetter.vacuuming))
-                {
-                    currentState = State.BlownAway;
-                    this.tag = "吹き飛ばされているやつ用のタグ";
-                }
-               
-
-                if(currentState == State.BlownAway)
-                {
-                    navMeshAgent.enabled = false;
-                    rb.isKinematic = false;
-                    girlCollider.isTrigger = false;
-                }
+            case State.HyperVacuumed:            
+                OnHyperVacuumed();
                 break;
 
             case State.BlownAway:
+                OnBlownAway();
+                break;
 
-                // OnBlownAway() girlタグかEnvironmentタグに当たると停止する。
+            case State.Damaged:
+                OnDamaged();
+                break;
+
+            case State.Stan:
+                OnStan();
                 break;
             default:
                 break;
@@ -251,7 +252,7 @@ public class GirlController_ : MonoBehaviour
             {
                 //　経路が取得できたなら、進行方向にplayerがいないかチェックする
                 Vector3 tempDestination = hit.position;
-                if (Physics.SphereCast(sphereCastRoot.position, girlCollider.radius * 6, tempDestination - girlPosition, out RaycastHit hitinfo, 10f, LayerMask.GetMask("Character")))
+                if (Physics.SphereCast(sphereCastRoot.position, girlColliderRdius * 6, tempDestination - girlPosition, out RaycastHit hitinfo, 10f, LayerMask.GetMask("Character")))
                 {
                     Debug.Log("navimesh取得できたがplayerがいる方向");
                     //yield return null
@@ -288,16 +289,20 @@ public class GirlController_ : MonoBehaviour
     #endregion
 
     /// <summary>
-    /// VcuumedステートやVacuumReleaseステートに
+    /// NavmeshAgentをfalseにしてColliderのisKinematicをfalseにするなどしてNavmeshAgent主導で動かすのを物理演算主導に
     /// </summary>
     public void PrepareVacuumed()
     {
         if (navMeshAgent.enabled)
         {
-            navMeshAgent.ResetPath();
+            if (navMeshAgent.hasPath)
+            {
+                navMeshAgent.ResetPath();
+            }
+
             navMeshAgent.enabled = false;
+            girlCollider.enabled = true; 
             rb.isKinematic = false;
-            girlCollider.isTrigger = false;
         }
     }
     /// <summary>
@@ -416,7 +421,9 @@ public class GirlController_ : MonoBehaviour
             currentState = State.Stan;
         }
     }
-
+    /// <summary>
+    /// HyperVacuumedステート時の立ち振る舞い
+    /// </summary>
     void OnHyperVacuumed()
     {
         Debug.Log("HyperVaccumedされてます"); //HyperVacuumedアニメを再生する
@@ -432,12 +439,19 @@ public class GirlController_ : MonoBehaviour
 
     void OnBlownAway()
     {
+        girlTransform.parent = null;
         this.tag = "BlownAway";
-
-        
-        
+        //　pantsGetterがBlowAway(Vector3 direction)を呼ぶ。
+        //　OnCollisionEnterでState.Damagedに遷移
     }
-
+    public void BlowAway(Vector3 direction)
+    {
+        rb.velocity = direction;
+    }
+    /// <summary>
+    /// currentState == State.BlownAwayの時、Girl・Environmentタグと衝突したときcurrentState = State.Damagedにする
+    /// </summary>
+    /// <param name="collision"></param>
     private void OnCollisionEnter(Collision collision)
     {
         if(currentState == State.BlownAway)
@@ -445,12 +459,50 @@ public class GirlController_ : MonoBehaviour
             if(collision.gameObject.CompareTag("Girl") || collision.gameObject.CompareTag("Environment"))
             {
                 rb.velocity = Vector3.zero;
-                collision.gameObject.GetComponent<GirlController_>().currentState = State.Damaged;
+                currentState = State.Damaged;
+                if(collision.gameObject.CompareTag("Girl"))
+                {
+                    collision.gameObject.GetComponent<GirlController_>().currentState = State.Damaged;
+                }
             }
         }
+    }
+    void OnDamaged()
+    {
+        Debug.Log("Damagedだよーん");
+        PrepareVacuumed();
+        currentState = State.Stan;
+    }
+    void OnStan()
+    {
+        if(isEnable)
+        {
+            isEnable = false;
+            StartCoroutine(DelayCoroutine(3f, () =>
+            {
+                if (!navMeshAgent.enabled)
+                {
+                    rb.isKinematic = true;
+                    if(navMeshAgent.hasPath)
+                    {
+                        navMeshAgent.ResetPath();
+                    }
+                    navMeshAgent.enabled = true;
+                }
+                isEnable = true;
+                currentState = State.Normal;
+            }));
+        }
+       
     }
 
 
 
+
+    private IEnumerator DelayCoroutine(float seconds, System.Action action)
+    {
+        yield return new WaitForSeconds(seconds);
+        action?.Invoke();
+    }
 
 }

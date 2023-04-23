@@ -122,6 +122,7 @@ public class PlayerContoroller : MonoBehaviour
     private CharacterController _controller;
     private PlayerInputs _input;
     private GameObject _mainCamera;
+    private bool isEnable;
 
     private const float _threshold = 0.01f;
 
@@ -173,6 +174,7 @@ public class PlayerContoroller : MonoBehaviour
         _hasAnimator = TryGetComponent(out _animator);
 
         currentState = State.Normal;
+        isEnable = true;
     }
 
     private void Update()
@@ -180,56 +182,16 @@ public class PlayerContoroller : MonoBehaviour
         switch (currentState)
         {
             case State.Normal:
-                if(_input.vaccum)
-                {
-                    currentState = State.Vacuum;
-                    _animator.SetFloat(_animIDSpeed, 0);
-                }
-
-                if (currentState == State.Normal)
-                {
-                    JumpAndGravity();
-                    GroundedCheck();
-                    Move();
-                }
+                OnNormal();
                 break;
             case State.Vacuum:
-                if(_input.hyperVaccum)
-                {
-                    pantsGetter.OnVacuum();
-                    currentState = State.HyperVacuum;
-                }
-                if(_input.vaccumRelese)
-                {
-                    currentState = State.Normal;
-                    pantsGetter.OffVacuum();
-                }
-                
-                if(currentState == State.Vacuum)
-                {
-                    pantsGetter.OnVacuum();
-                    Debug.Log("Vaccum‚¾‚æ");
-                }
-
+                OnVacuum();
                 break;
             case State.HyperVacuum:
-                if(_input.vaccumRelese)
-                {
-                    currentState = State.VacuumRelease;
-                }
-
-                if(currentState == State.HyperVacuum)
-                {
-                    Debug.Log("HyperVaccum‚¾‚æ");
-                    transform.Rotate(0, _input.move.x, 0);
-                }
-
+                OnHyperVcuum();
                 break;
             case State.VacuumRelease:
-                Debug.Log("VaccumRelease‚¾‚æ");
-
-                currentState = State.Normal;
-
+                OnVcuumRelese();
                 break;
             case State.Attack:
                 break;
@@ -243,15 +205,6 @@ public class PlayerContoroller : MonoBehaviour
                 break;
         }
 
-
-
-
-
-
-
-        //JumpAndGravity();
-        //GroundedCheck();
-        //Move();
     }
 
     private void LateUpdate()
@@ -484,6 +437,69 @@ public class PlayerContoroller : MonoBehaviour
         {
             AudioSource.PlayClipAtPoint(LandingAudioClip, transform.TransformPoint(_controller.center), FootstepAudioVolume);
         }
+    }
+
+    void OnNormal()
+    {
+       
+        JumpAndGravity();
+        GroundedCheck();
+        Move();
+        pantsGetter.Idle();
+
+        if (_input.vaccum || _input.hyperVaccum)
+        {
+            currentState = State.Vacuum;
+        }
+        
+    }
+    void OnVacuum()
+    {
+        _animator.SetFloat(_animIDSpeed, 0);
+        if(isEnable)
+        {
+            isEnable = false;
+            pantsGetter.OnVacuum();
+        }
+        Debug.Log("Vaccum‚¾‚æ");
+
+        if (_input.hyperVaccum)
+        {
+            isEnable = true;
+            currentState = State.HyperVacuum;
+        }
+        if (_input.vaccumRelese)
+        {
+            isEnable = true;
+            pantsGetter.Idle();
+            currentState = State.Normal;
+        }
+    }
+    void OnHyperVcuum()
+    {
+        Debug.Log("HyperVaccum‚¾‚æ");
+        transform.Rotate(0, _input.move.x, 0);
+        pantsGetter.OnVacuum();
+        pantsGetter.OnHyperVacuuming();
+
+        if (_input.vaccumRelese)
+        {
+            currentState = State.VacuumRelease;
+        }
+    }
+    void OnVcuumRelese()
+    {
+        if(isEnable)
+        {
+            pantsGetter.OnVacuumRelease();
+            isEnable = false;
+        }
+        else
+        {
+            isEnable = true;
+            currentState= State.Normal;
+        }
+
     }
 }
 

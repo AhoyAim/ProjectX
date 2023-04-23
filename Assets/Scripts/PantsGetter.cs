@@ -33,21 +33,25 @@ public class PantsGetter : MonoBehaviour
         }
     }
 
-    public void OnHyoerVacuuming()
+    public void OnHyperVacuuming()
     {
         hyperVacuuming = true;
-        // girl‚ğˆø‚Á’£‚è‘±‚¯‚é“®ì‚ğÀ‘•‚·‚é
     }
 
     public void OnVacuumRelease()
     {
-        
+        vacuumReieasing = true;
+        foreach (var girl in vaccumedableGirlControllers)
+        {
+            girl.BlowAway(transform.forward);
+        }
     }
 
-    public void OffVacuum()
+    public void Idle()
     {
         vacuuming = false;
-        hyperVacuuming |= false;
+        hyperVacuuming = false;
+        vacuumReieasing = false;
     }
 
 
