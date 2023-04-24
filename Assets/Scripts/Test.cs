@@ -16,7 +16,7 @@ public class Test : MonoBehaviour
     {
         if(Input.GetKeyDown(KeyCode.Z))
         {
-            rb.velocity = transform.forward * 100;
+            rb.velocity = Vector3.forward;
         }
     }
    

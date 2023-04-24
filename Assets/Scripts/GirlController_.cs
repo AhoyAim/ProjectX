@@ -117,6 +117,8 @@ public class GirlController_ : MonoBehaviour
                 break;
         }
 
+        
+
         if (isRunaway)
         {
             animator.SetFloat(animIDSpeed, runSpeed);
@@ -184,7 +186,7 @@ public class GirlController_ : MonoBehaviour
     /// </summary>
     public void CheckVaccumedAndDamaged()
     {
-        if(currentState == State.Stan)
+        if(currentState == State.Stan || currentState == State.HyperVacuumed || currentState == State.BlownAway)
         {
             return;
         }
@@ -429,7 +431,8 @@ public class GirlController_ : MonoBehaviour
         Debug.Log("HyperVaccumedされてます"); //HyperVacuumedアニメを再生する
         PrepareVacuumed();
 
-        girlTransform.parent = playerTransform;
+        girlTransform.SetParent(playerTransform);
+        
 
         if(pantsGetter.vacuumReieasing)
         {
@@ -440,13 +443,15 @@ public class GirlController_ : MonoBehaviour
     void OnBlownAway()
     {
         girlTransform.parent = null;
-        this.tag = "BlownAway";
+        
         //　pantsGetterがBlowAway(Vector3 direction)を呼ぶ。
         //　OnCollisionEnterでState.Damagedに遷移
     }
     public void BlowAway(Vector3 direction)
     {
-        rb.velocity = direction;
+        this.tag = "BlownAway";
+        girlTransform.position = girlTransform.position + girlTransform.up * 0.2f;
+        rb.AddForce(direction);
     }
     /// <summary>
     /// currentState == State.BlownAwayの時、Girl・Environmentタグと衝突したときcurrentState = State.Damagedにする
@@ -458,7 +463,9 @@ public class GirlController_ : MonoBehaviour
         {
             if(collision.gameObject.CompareTag("Girl") || collision.gameObject.CompareTag("Environment"))
             {
+                
                 rb.velocity = Vector3.zero;
+                this.tag = "Girl";
                 currentState = State.Damaged;
                 if(collision.gameObject.CompareTag("Girl"))
                 {
