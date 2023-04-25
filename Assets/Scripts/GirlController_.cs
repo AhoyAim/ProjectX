@@ -39,6 +39,7 @@ public class GirlController_ : MonoBehaviour
     private NavMeshAgent navMeshAgent;
     private Animator animator;
     private int animIDSpeed;
+    private int animIDHyperVcuuned;
     private float girlColliderRdius;
     private float vaccumedableDistance;
     private float vaccumedableAngle;
@@ -57,6 +58,7 @@ public class GirlController_ : MonoBehaviour
         navMeshAgent = GetComponent<NavMeshAgent>();
         animator = GetComponent<Animator>();
         animIDSpeed = Animator.StringToHash("Speed");
+        animIDHyperVcuuned = Animator.StringToHash("HyperVcuumed");
         vaccumedableDistance = pantsGetter.vaccumableDistance;
         vaccumedableAngle = pantsGetter.vaccumableAngle;
         girlTransform = transform;
@@ -117,7 +119,14 @@ public class GirlController_ : MonoBehaviour
                 break;
         }
 
-        
+        if(Input.GetKey(KeyCode.Z))
+        {
+            rb.velocity = Vector3.forward;
+        }
+        if (Input.GetKey(KeyCode.X))
+        {
+            rb.velocity = Vector3.up;
+        }
 
         if (isRunaway)
         {
@@ -429,7 +438,9 @@ public class GirlController_ : MonoBehaviour
     void OnHyperVacuumed()
     {
         Debug.Log("HyperVaccumedされてます"); //HyperVacuumedアニメを再生する
+        girlTransform.LookAt(2 * girlTransform.position - playerTransform.position);
         PrepareVacuumed();
+        //animator.SetBool(animIDHyperVcuuned, true);
 
         girlTransform.SetParent(playerTransform);
         
@@ -437,6 +448,7 @@ public class GirlController_ : MonoBehaviour
         if(pantsGetter.vacuumReieasing)
         {
             currentState = State.BlownAway;
+            //animator.SetBool(animIDHyperVcuuned, false);
         }
     }
 
@@ -451,7 +463,7 @@ public class GirlController_ : MonoBehaviour
     {
         this.tag = "BlownAway";
         girlTransform.position = girlTransform.position + girlTransform.up * 0.2f;
-        rb.AddForce(direction);
+        rb.AddRelativeForce(direction, ForceMode.Impulse);
     }
     /// <summary>
     /// currentState == State.BlownAwayの時、Girl・Environmentタグと衝突したときcurrentState = State.Damagedにする
@@ -485,7 +497,7 @@ public class GirlController_ : MonoBehaviour
         if(isEnable)
         {
             isEnable = false;
-            StartCoroutine(DelayCoroutine(3f, () =>
+            StartCoroutine(DelayCoroutine(2f, () =>
             {
                 if (!navMeshAgent.enabled)
                 {

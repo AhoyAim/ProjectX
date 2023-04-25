@@ -44,7 +44,7 @@ public class PantsGetter : MonoBehaviour
         vacuumReieasing = true;
         foreach (var girl in vaccumedableGirlControllers)
         {
-            girl.BlowAway(transform.up*100);
+            girl.BlowAway(transform.forward*100);
             Debug.Log($"{girl}‚ðBlowAway{transform.forward}‚µ‚½");
         }
     }

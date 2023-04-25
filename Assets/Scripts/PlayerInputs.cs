@@ -100,7 +100,7 @@ public class PlayerInputs : MonoBehaviour
         if(Input.GetButton("Fire1"))
         {
             Vaccumtime += Time.deltaTime;
-            if(Vaccumtime >= 1f)
+            if(Vaccumtime >= 0.75f)
             {
                 hyperVaccum = true;
             }
