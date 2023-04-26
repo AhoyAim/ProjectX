@@ -1653,7 +1653,7 @@ Animator:
   m_Controller: {fileID: 9100000, guid: 83f9332d79ca2cc489cb16e5e9c7ca9c, type: 2}
   m_CullingMode: 1
   m_UpdateMode: 0
-  m_ApplyRootMotion: 1
+  m_ApplyRootMotion: 0
   m_LinearVelocityBlending: 0
   m_StabilizeFeet: 0
   m_WarningMessage: 
@@ -1719,6 +1719,7 @@ MonoBehaviour:
   maxRunawayTime: 5
   runSpeed: 3.5
   walkSpeed: 2
+  stanTime: 2
 --- !u!54 &3321401432975120187
 Rigidbody:
   m_ObjectHideFlags: 0

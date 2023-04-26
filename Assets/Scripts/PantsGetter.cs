@@ -6,10 +6,11 @@ public class PantsGetter : MonoBehaviour
 {
     public PantsCalc pantsCalc;
     public float vaccumableDistance = 2.25f;
-    public float vaccumableAngle = 90f;
+    public float vacuumableAngle = 90f;
+    public float vacuumReleasPower = 20;
     public bool vacuuming = false;
     public bool hyperVacuuming = false;
-    public bool vacuumReieasing = false;
+    public bool vacuumReleasing = false;
 
     HashSet<GirlController_> vaccumedableGirlControllers = null;
     private void Start()
@@ -41,10 +42,10 @@ public class PantsGetter : MonoBehaviour
     public void OnVacuumRelease()
     {
         Idle();
-        vacuumReieasing = true;
+        vacuumReleasing = true;
         foreach (var girl in vaccumedableGirlControllers)
         {
-            girl.BlowAway(transform.forward*100);
+            girl.BlowAway(transform.forward * vacuumReleasPower);
             Debug.Log($"{girl}‚ðBlowAway{transform.forward}‚µ‚½");
         }
     }
@@ -53,7 +54,7 @@ public class PantsGetter : MonoBehaviour
     {
         vacuuming = false;
         hyperVacuuming = false;
-        vacuumReieasing = false;
+        vacuumReleasing = false;
     }
 
 

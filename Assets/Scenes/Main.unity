@@ -812,7 +812,7 @@ GameObject:
   - component: {fileID: 1879775319}
   m_Layer: 0
   m_Name: Ground (1)
-  m_TagString: Untagged
+  m_TagString: Environment
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 119
@@ -954,7 +954,7 @@ GameObject:
   - component: {fileID: 6899281793338090080}
   m_Layer: 0
   m_Name: Box_100x100x100_Prefab (17)
-  m_TagString: Untagged
+  m_TagString: Environment
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 73
@@ -1759,7 +1759,7 @@ GameObject:
   - component: {fileID: 723031990053287378}
   m_Layer: 0
   m_Name: border
-  m_TagString: Untagged
+  m_TagString: Environment
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 73
@@ -2050,7 +2050,7 @@ GameObject:
   - component: {fileID: 723031990229615986}
   m_Layer: 0
   m_Name: Cylinder
-  m_TagString: Untagged
+  m_TagString: Environment
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 73
@@ -2148,7 +2148,7 @@ GameObject:
   - component: {fileID: 723031990252677112}
   m_Layer: 0
   m_Name: Ground
-  m_TagString: Untagged
+  m_TagString: Environment
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 127
@@ -2440,7 +2440,7 @@ GameObject:
   - component: {fileID: 723031990418811099}
   m_Layer: 0
   m_Name: border
-  m_TagString: Untagged
+  m_TagString: Environment
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 73
@@ -2925,7 +2925,7 @@ GameObject:
   - component: {fileID: 723031990764073809}
   m_Layer: 0
   m_Name: border
-  m_TagString: Untagged
+  m_TagString: Environment
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 73
@@ -3601,7 +3601,7 @@ GameObject:
   - component: {fileID: 723031991232857949}
   m_Layer: 0
   m_Name: Environment_Prefab
-  m_TagString: Untagged
+  m_TagString: Environment
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -3637,7 +3637,7 @@ GameObject:
   - component: {fileID: 723031991299936562}
   m_Layer: 0
   m_Name: border
-  m_TagString: Untagged
+  m_TagString: Environment
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 73
@@ -4179,7 +4179,7 @@ GameObject:
   - component: {fileID: 5816756504707871342}
   m_Layer: 0
   m_Name: Box_100x100x100_Prefab (10)
-  m_TagString: Untagged
+  m_TagString: Environment
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 73
@@ -4413,7 +4413,7 @@ GameObject:
   - component: {fileID: 5517140352940125576}
   m_Layer: 0
   m_Name: Box_100x100x100_Prefab (11)
-  m_TagString: Untagged
+  m_TagString: Environment
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 73
@@ -4548,7 +4548,7 @@ GameObject:
   - component: {fileID: 5251977540579489569}
   m_Layer: 0
   m_Name: Box_100x100x100_Prefab (2)
-  m_TagString: Untagged
+  m_TagString: Environment
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 73
@@ -4712,7 +4712,7 @@ GameObject:
   - component: {fileID: 3625319882201292145}
   m_Layer: 0
   m_Name: Stairs_200x100x200_Prefab(1)
-  m_TagString: Untagged
+  m_TagString: Environment
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 73
@@ -4773,7 +4773,7 @@ GameObject:
   - component: {fileID: 5062256168174109582}
   m_Layer: 0
   m_Name: Box_100x100x100_Prefab
-  m_TagString: Untagged
+  m_TagString: Environment
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 73
@@ -5141,7 +5141,7 @@ GameObject:
   - component: {fileID: 8883990730212164945}
   m_Layer: 0
   m_Name: Box_100x100x100_Prefab (9)
-  m_TagString: Untagged
+  m_TagString: Environment
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 73
@@ -5501,7 +5501,7 @@ GameObject:
   - component: {fileID: 8305013780701569344}
   m_Layer: 0
   m_Name: Box_100x100x100_Prefab (6)
-  m_TagString: Untagged
+  m_TagString: Environment
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 73
@@ -5656,11 +5656,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 3321401432975120191, guid: 1836ccbaf7d3ec54d9d1b233a1eb012e,
-        type: 3}
-      propertyPath: m_ApplyRootMotion
-      value: 0
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 1836ccbaf7d3ec54d9d1b233a1eb012e, type: 3}
 --- !u!1 &3362393808833738517
@@ -5733,7 +5728,7 @@ GameObject:
   - component: {fileID: 7920075494094798402}
   m_Layer: 0
   m_Name: Box_100x100x100_Prefab (8)
-  m_TagString: Untagged
+  m_TagString: Environment
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 73
@@ -5800,7 +5795,7 @@ GameObject:
   - component: {fileID: 5010347039218185293}
   m_Layer: 0
   m_Name: Ramp_Mesh
-  m_TagString: Untagged
+  m_TagString: Environment
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 73
@@ -5976,7 +5971,7 @@ GameObject:
   - component: {fileID: 7702258424375873485}
   m_Layer: 0
   m_Name: Box_100x100x100_Prefab (7)
-  m_TagString: Untagged
+  m_TagString: Environment
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 73
@@ -6045,7 +6040,7 @@ GameObject:
   - component: {fileID: 7503709343019333495}
   m_Layer: 0
   m_Name: Primitives
-  m_TagString: Untagged
+  m_TagString: Environment
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -6294,7 +6289,7 @@ GameObject:
   - component: {fileID: 2907141744725744827}
   m_Layer: 0
   m_Name: Box_350x300x250_Prefab
-  m_TagString: Untagged
+  m_TagString: Environment
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 73
@@ -6358,7 +6353,7 @@ GameObject:
   - component: {fileID: 7091189021938497183}
   m_Layer: 0
   m_Name: Box_100x100x100_Prefab (14)
-  m_TagString: Untagged
+  m_TagString: Environment
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 73
@@ -6408,7 +6403,7 @@ GameObject:
   - component: {fileID: 2822361183980783923}
   m_Layer: 0
   m_Name: Tunnel_Prefab
-  m_TagString: Untagged
+  m_TagString: Environment
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 73
@@ -6427,7 +6422,7 @@ GameObject:
   - component: {fileID: 7016516635230251811}
   m_Layer: 0
   m_Name: Box_100x100x100_Prefab (16)
-  m_TagString: Untagged
+  m_TagString: Environment
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 73
@@ -6710,7 +6705,7 @@ GameObject:
   - component: {fileID: 2448118379372148704}
   m_Layer: 0
   m_Name: Box_350x200x250_Prefab
-  m_TagString: Untagged
+  m_TagString: Environment
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 73
@@ -6854,6 +6849,7 @@ MonoBehaviour:
   maxRunawayTime: 5
   runSpeed: 3.5
   walkSpeed: 2
+  stanTime: 2
 --- !u!54 &5063464873721437185
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -7116,7 +7112,7 @@ GameObject:
   - component: {fileID: 3691472360203434955}
   m_Layer: 0
   m_Name: Wall_Prefab
-  m_TagString: Untagged
+  m_TagString: Environment
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 73
@@ -7179,7 +7175,7 @@ GameObject:
   - component: {fileID: 1258215472645174306}
   m_Layer: 0
   m_Name: Box_100x100x100_Prefab (15)
-  m_TagString: Untagged
+  m_TagString: Environment
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 73
@@ -7285,7 +7281,7 @@ GameObject:
   - component: {fileID: 5086057476127444844}
   m_Layer: 0
   m_Name: Structure_Prefab
-  m_TagString: Untagged
+  m_TagString: Environment
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 73
@@ -7409,7 +7405,7 @@ GameObject:
   - component: {fileID: 858254868612972072}
   m_Layer: 0
   m_Name: Box_100x100x100_Prefab (3)
-  m_TagString: Untagged
+  m_TagString: Environment
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 73
@@ -7781,7 +7777,7 @@ GameObject:
   - component: {fileID: 557341825282242137}
   m_Layer: 0
   m_Name: Box_100x100x100_Prefab (12)
-  m_TagString: Untagged
+  m_TagString: Environment
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 73
@@ -8149,7 +8145,7 @@ GameObject:
   - component: {fileID: 8753790229703573570}
   m_Layer: 0
   m_Name: Environment_LightProbeAnchor
-  m_TagString: Untagged
+  m_TagString: Environment
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -8205,7 +8201,7 @@ GameObject:
   - component: {fileID: 4280044890694352252}
   m_Layer: 0
   m_Name: Box_350x200x250_Prefab
-  m_TagString: Untagged
+  m_TagString: Environment
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 73
@@ -8379,7 +8375,7 @@ GameObject:
   - component: {fileID: 4468225058425816412}
   m_Layer: 0
   m_Name: Box_100x100x100_Prefab (1)
-  m_TagString: Untagged
+  m_TagString: Environment
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 73
@@ -8427,7 +8423,7 @@ GameObject:
   - component: {fileID: 4427537833584398997}
   m_Layer: 0
   m_Name: Box_100x100x100_Prefab (13)
-  m_TagString: Untagged
+  m_TagString: Environment
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 73
@@ -8533,7 +8529,7 @@ GameObject:
   - component: {fileID: 8715286819773651191}
   m_Layer: 0
   m_Name: Ground_Mesh
-  m_TagString: Untagged
+  m_TagString: Environment
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 73
@@ -8558,7 +8554,7 @@ GameObject:
   - component: {fileID: 5702263190120849876}
   m_Layer: 0
   m_Name: Stairs_200x100x200_Prefab
-  m_TagString: Untagged
+  m_TagString: Environment
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 73
@@ -8577,7 +8573,7 @@ GameObject:
   - component: {fileID: 4157729153336758951}
   m_Layer: 0
   m_Name: Box_100x100x100_Prefab (4)
-  m_TagString: Untagged
+  m_TagString: Environment
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 73
@@ -8712,7 +8708,7 @@ GameObject:
   - component: {fileID: 3970949554992917004}
   m_Layer: 0
   m_Name: Box_100x100x100_Prefab (5)
-  m_TagString: Untagged
+  m_TagString: Environment
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 73
@@ -9078,7 +9074,7 @@ GameObject:
   - component: {fileID: 8566522149022127150}
   m_Layer: 0
   m_Name: Stairs_650_400_300_Prefab
-  m_TagString: Untagged
+  m_TagString: Environment
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 73
