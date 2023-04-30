@@ -18,7 +18,7 @@ public class GirlController_ : MonoBehaviour
         Approch,
         Attack,
         Damaged,
-        Stan,
+        //Stan,
         Vacuumed,
         HyperVacuumed,
         BlownAway,
@@ -41,6 +41,7 @@ public class GirlController_ : MonoBehaviour
     private NavMeshAgent navMeshAgent;
     private Animator animator;
     private int animIDSpeed;
+    private int animIDNavmeshAgent;
     private int animIDVacuumed;
     private int animIDHyperVcuuned;
     private int animIDBlowAway;
@@ -64,6 +65,7 @@ public class GirlController_ : MonoBehaviour
         navMeshAgent = GetComponent<NavMeshAgent>();
         animator = GetComponent<Animator>();
         animIDSpeed = Animator.StringToHash("Speed");
+        animIDNavmeshAgent = Animator.StringToHash("NavMeshAgent");
         animIDVacuumed = Animator.StringToHash("Vacuumed");
         animIDHyperVcuuned = Animator.StringToHash("HyperVacuumed");
         animIDBlowAway = Animator.StringToHash("BlowAway");
@@ -82,7 +84,7 @@ public class GirlController_ : MonoBehaviour
     {
         CheckVaccumedAndDamaged();
 
-        AnimePlay();
+        //AnimePlay();
 
         switch (currentState)
         {
@@ -122,9 +124,9 @@ public class GirlController_ : MonoBehaviour
                 OnDamaged();
                 break;
 
-            case State.Stan:
-                OnStan();
-                break;
+            //case State.Stan:
+            //    OnStan();
+                //break;
             default:
                 break;
         }
@@ -136,57 +138,57 @@ public class GirlController_ : MonoBehaviour
     /// <summary>
     /// 現在のステートに応じたトリガーをsetし、アニメーションを再生する。
     /// </summary>
-    void AnimePlay()
-    {
-        switch (currentState)
-        {
+    //void AnimePlay()
+    //{
+    //    switch (currentState)
+    //    {
             
-            case State.Notice:
-                break;
-            case State.Attack:
-                break;
-            case State.Damaged:
-                if(!animator.GetCurrentAnimatorStateInfo(0).IsName("Damaged"))
-                {
-                    animator.SetTrigger(animIDDamaged);
-                    Debug.Break();
-                }
-                break;
-            case State.Stan:
-                if (!animator.GetCurrentAnimatorStateInfo(0).IsName("Stan"))
-                {
-                    animator.SetTrigger(animIDStan);
-                }
-                break;
-            case State.Vacuumed:
-                if (!animator.GetCurrentAnimatorStateInfo(0).IsName("Vacuumed"))
-                {
-                    animator.SetTrigger(animIDVacuumed);
-                }
-                break;
-            case State.HyperVacuumed:
-                if (!animator.GetCurrentAnimatorStateInfo(0).IsName("HyperVacuumed"))
-                {
-                    animator.SetTrigger(animIDHyperVcuuned);
-                }
-                break;
-            case State.BlownAway:
-                if (!animator.GetCurrentAnimatorStateInfo(0).IsName("BlownAway"))
-                {
-                    animator.SetTrigger(animIDBlowAway);
-                }
-                break;
-            default:
-                if (isRunaway)
-                {
-                    animator.SetFloat(animIDSpeed, runSpeed);
-                }
-                animator.SetFloat(animIDSpeed, navMeshAgent.velocity.magnitude);
-                break;
-        }
+    //        case State.Notice:
+    //            break;
+    //        case State.Attack:
+    //            break;
+    //        case State.Damaged:
+    //            if(!animator.GetCurrentAnimatorStateInfo(0).IsName("Damaged"))
+    //            {
+    //                animator.SetTrigger(animIDDamaged);
+    //                Debug.Break();
+    //            }
+    //            break;
+    //        case State.Stan:
+    //            if (!animator.GetCurrentAnimatorStateInfo(0).IsName("Stan"))
+    //            {
+    //                animator.SetTrigger(animIDStan);
+    //            }
+    //            break;
+    //        case State.Vacuumed:
+    //            if (!animator.GetCurrentAnimatorStateInfo(0).IsName("Vacuumed"))
+    //            {
+    //                animator.SetTrigger(animIDVacuumed);
+    //            }
+    //            break;
+    //        case State.HyperVacuumed:
+    //            if (!animator.GetCurrentAnimatorStateInfo(0).IsName("HyperVacuumed"))
+    //            {
+    //                animator.SetTrigger(animIDHyperVcuuned);
+    //            }
+    //            break;
+    //        case State.BlownAway:
+    //            if (!animator.GetCurrentAnimatorStateInfo(0).IsName("BlownAway"))
+    //            {
+    //                animator.SetTrigger(animIDBlowAway);
+    //            }
+    //            break;
+    //        default:
+    //            if (isRunaway)
+    //            {
+    //                animator.SetFloat(animIDSpeed, runSpeed);
+    //            }
+    //            animator.SetFloat(animIDSpeed, navMeshAgent.velocity.magnitude);
+    //            break;
+    //    }
         
         
-    }
+    //}
     /// <summary>
     /// アニメーション再生進捗が次ステートへの遷移可能なところまで進んでいるかチェックする。
     /// </summary>
@@ -271,7 +273,7 @@ public class GirlController_ : MonoBehaviour
     /// </summary>
     public void CheckVaccumedAndDamaged()
     {
-        if(currentState == State.Stan || currentState == State.HyperVacuumed || currentState == State.BlownAway)
+        if(currentState == State.Damaged || currentState == State.Vacuumed || currentState == State.HyperVacuumed || currentState == State.BlownAway)
         {
             return;
         }
@@ -279,6 +281,7 @@ public class GirlController_ : MonoBehaviour
         if(CheckVaccumedNow())
         {
             currentState = State.Vacuumed;
+            animator.SetTrigger(animIDVacuumed);
         }
         
     }
@@ -413,6 +416,7 @@ public class GirlController_ : MonoBehaviour
     public void OnNormal()
     {
         navMeshAgent.speed = walkSpeed;
+        animator.SetFloat(animIDSpeed, navMeshAgent.velocity.magnitude);
         if ((Random.Range(0, 5000) < 20))
         {
             navMeshAgent.destination = GetSamplePointNavMesh();
@@ -449,6 +453,7 @@ public class GirlController_ : MonoBehaviour
     public void OnRunaway()
     {
         navMeshAgent.speed = runSpeed;
+        animator.SetFloat(animIDSpeed, navMeshAgent.velocity.magnitude);
         if (!isRunaway)
         {
             StartCoroutine(Runaway());　// Runaway()内に次のステートに遷移できないかチェックを実装してます
@@ -462,6 +467,7 @@ public class GirlController_ : MonoBehaviour
     public void OnApproch()
     {
         navMeshAgent.speed = runSpeed;
+        animator.SetFloat(animIDSpeed, navMeshAgent.velocity.magnitude);
         navMeshAgent.stoppingDistance = 1.5f;
         navMeshAgent.destination = playerTransform.position;
 
@@ -519,19 +525,22 @@ public class GirlController_ : MonoBehaviour
         Debug.Log(pantsGetter.hyperVacuuming);
         Debug.Log(!pantsGetter.vacuuming);
         // 次のステートに遷移できないかチェック
-        if (!IsChangeableAnimeState("Vacuumed"))
-        {
-            return;
-        }
         if (pantsGetter.hyperVacuuming)
         {
             currentState = State.HyperVacuumed;
+            animator.SetTrigger(animIDHyperVcuuned);
+            return;
+        }
+
+        if (!IsChangeableAnimeState("Vacuumed"))
+        {
+            return;
         }
         else if (!pantsGetter.vacuuming)
         {
             TeardownVacuumed();
             currentState = State.Normal;
-            Debug.Break();
+            animator.SetTrigger(animIDNavmeshAgent);
         }
     }
     /// <summary>
@@ -540,7 +549,7 @@ public class GirlController_ : MonoBehaviour
     void OnHyperVacuumed()
     {
         Debug.Log("HyperVaccumedされてます"); //HyperVacuumedアニメを再生する
-        girlTransform.LookAt(2 * girlTransform.position - playerTransform.position);
+        girlTransform.LookAt(10 * playerTransform.forward);
         SetupVacuumed();
 
         girlTransform.SetParent(playerTransform);
@@ -548,7 +557,8 @@ public class GirlController_ : MonoBehaviour
         // 次のステートに遷移できないかチェック
         if (pantsGetter.vacuumReleasing)
         {
-            currentState = State.BlownAway;      
+            currentState = State.BlownAway;
+            animator.SetTrigger(animIDBlowAway);
         }
     }
 
@@ -579,6 +589,7 @@ public class GirlController_ : MonoBehaviour
                 rb.velocity = Vector3.zero;
                 this.tag = "Girl";
                 currentState = State.Damaged;
+                animator.SetTrigger(animIDDamaged);
                 if(collision.gameObject.CompareTag("Girl"))
                 {
                     collision.gameObject.GetComponent<GirlController_>().currentState = State.Damaged;
@@ -594,24 +605,32 @@ public class GirlController_ : MonoBehaviour
         {
             return;
         }
-        currentState = State.Stan;
+       
     }
     void OnStan()
     {
-        if(isEnable)
+        //if(isEnable)
+        //{
+        //    isEnable = false;
+
+        //TeardownVacuumed();
+
+        //    isEnable = true;
+
+        //    StartCoroutine(DelayCoroutine(() =>
+        //    {
+        //        currentState = State.Normal;
+        //    }));
+        //}
+
+        TeardownVacuumed();
+
+        if(!IsChangeableAnimeState("Stan"))
         {
-            isEnable = false;
-
-            TeardownVacuumed();
-           
-            isEnable = true;
-
-            StartCoroutine(DelayCoroutine(() =>
-            {
-                currentState = State.Normal;
-            }));
+            return;
         }
-       
+        currentState = State.Normal;
+        animator.SetTrigger(animIDNavmeshAgent);
     }
 
 
