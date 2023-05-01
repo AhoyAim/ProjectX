@@ -415,6 +415,11 @@ public class GirlController_ : MonoBehaviour
     /// </summary>
     public void OnNormal()
     {
+        TeardownVacuumed();
+        if (!animator.GetBool(animIDNavmeshAgent))
+        {
+            animator.SetBool(animIDNavmeshAgent, true);
+        }
         navMeshAgent.speed = walkSpeed;
         animator.SetFloat(animIDSpeed, navMeshAgent.velocity.magnitude);
         if ((Random.Range(0, 5000) < 20))
@@ -452,6 +457,7 @@ public class GirlController_ : MonoBehaviour
     /// </summary>
     public void OnRunaway()
     {
+        TeardownVacuumed();
         navMeshAgent.speed = runSpeed;
         animator.SetFloat(animIDSpeed, navMeshAgent.velocity.magnitude);
         if (!isRunaway)
@@ -466,6 +472,7 @@ public class GirlController_ : MonoBehaviour
     /// </summary>
     public void OnApproch()
     {
+        TeardownVacuumed();
         navMeshAgent.speed = runSpeed;
         animator.SetFloat(animIDSpeed, navMeshAgent.velocity.magnitude);
         navMeshAgent.stoppingDistance = 1.5f;
@@ -517,6 +524,10 @@ public class GirlController_ : MonoBehaviour
     /// </summary>
     void OnVacuumed()
     {
+        if(!animator.GetBool(animIDVacuumed))
+        {
+            animator.SetBool(animIDVacuumed, true);
+        }
         Debug.Log("Vaccumedされてます"); //Vacuumedアニメを再生する
         girlTransform.LookAt(2 * girlTransform.position - playerTransform.position);
         SetupVacuumed();
@@ -548,6 +559,10 @@ public class GirlController_ : MonoBehaviour
     /// </summary>
     void OnHyperVacuumed()
     {
+        if (!animator.GetBool(animIDHyperVcuuned))
+        {
+            animator.SetBool(animIDHyperVcuuned, true);
+        }
         Debug.Log("HyperVaccumedされてます"); //HyperVacuumedアニメを再生する
         girlTransform.LookAt(10 * playerTransform.forward);
         SetupVacuumed();
@@ -564,6 +579,11 @@ public class GirlController_ : MonoBehaviour
 
     void OnBlownAway()
     {
+        if (!animator.GetBool(animIDBlowAway))
+        {
+            animator.SetBool(animIDBlowAway, true);
+        }
+
         girlTransform.parent = null;
         
         //　pantsGetterがBlowAway(Vector3 direction)を呼ぶ。
@@ -599,12 +619,17 @@ public class GirlController_ : MonoBehaviour
     }
     void OnDamaged()
     {
+        if (!animator.GetBool(animIDDamaged))
+        {
+            animator.SetBool(animIDDamaged, true);
+        }
         Debug.Log("Damagedだよーん");
-        SetupVacuumed();
-        if(!IsChangeableAnimeState("Damaged"))
+        TeardownVacuumed();
+        if(!IsChangeableAnimeState("Stan"))
         {
             return;
         }
+        currentState = State.Normal;
        
     }
     void OnStan()

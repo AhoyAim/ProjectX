@@ -40,7 +40,7 @@ public class DebugStateManager : MonoBehaviour
         }
         if (Input.GetKey(KeyCode.F7))
         {
-            ChangeState(GirlController_.State.Stan);
+            //ChangeState(GirlController_.State.Stan);
         }
         if (Input.GetKey(KeyCode.F8))
         {
