@@ -456,9 +456,16 @@ public class PlayerContoroller : MonoBehaviour
     void OnVacuum()
     {
         _animator.SetFloat(_animIDSpeed, 0);
-        if(isEnable)
+        float rotation = Mathf.SmoothDampAngle(transform.eulerAngles.y, CinemachineCameraTarget.transform.eulerAngles.y, ref _rotationVelocity,
+               RotationSmoothTime);
+        transform.rotation = Quaternion.Euler(0.0f, rotation, 0.0f);
+        if (isEnable)
         {
             isEnable = false;
+            //Vector3 horizontalCameraDirection = CinemachineCameraTarget.transform.forward;
+            //horizontalCameraDirection.y = transform.position.y;
+            //horizontalCameraDirection.Normalize();
+            //transform.LookAt(transform.position + horizontalCameraDirection);
             pantsGetter.OnVacuum();
         }
         Debug.Log("Vaccum‚¾‚æ");
@@ -478,7 +485,10 @@ public class PlayerContoroller : MonoBehaviour
     void OnHyperVcuum()
     {
         Debug.Log("HyperVaccum‚¾‚æ");
-        transform.Rotate(0, _input.move.x, 0);
+        float rotation = Mathf.SmoothDampAngle(transform.eulerAngles.y, CinemachineCameraTarget.transform.eulerAngles.y, ref _rotationVelocity,
+               RotationSmoothTime);
+        transform.rotation = Quaternion.Euler(0.0f, rotation, 0.0f);
+        transform.Rotate(0, _input.look.x, 0);
         pantsGetter.OnVacuum();
         pantsGetter.OnHyperVacuuming();
 

@@ -4,20 +4,12 @@ using UnityEngine;
 
 public class Test : MonoBehaviour
 {
-    Rigidbody rb;
-    // Start is called before the first frame update
-    void Start()
+    private void OnTriggerStay(Collider other)
     {
-        rb = GetComponent<Rigidbody>();  
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        if(Input.GetKeyDown(KeyCode.Z))
+        if(other.CompareTag("Pants") && Input.GetKeyDown(KeyCode.Z))
         {
-            rb.velocity = Vector3.forward;
+            Debug.Log("Test");
         }
     }
-   
+
 }

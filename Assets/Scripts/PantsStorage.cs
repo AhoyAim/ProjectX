@@ -6,6 +6,11 @@ public class PantsStorage : MonoBehaviour
 {
     public int goalPantsCount;
     public PantsCalc pantsCalc;
+
+    private void Start()
+    {
+        goalPantsCount = FindObjectsOfType<GirlController_>().Length;
+    }
     private void OnTriggerEnter(Collider other)
     {
         if(other.CompareTag("Player"))

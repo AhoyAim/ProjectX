@@ -28,6 +28,6 @@ public class PantsCalc : MonoBehaviour
     public void StoragePants()
     {
         StoragedPantsCount += CarryPantsCount;
-        CarryPantsCount= 0;
+        CarryPantsCount = 0;
     }
 }

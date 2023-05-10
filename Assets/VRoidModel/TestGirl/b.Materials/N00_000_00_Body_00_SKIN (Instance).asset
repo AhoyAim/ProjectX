@@ -12,6 +12,7 @@ Material:
   m_ValidKeywords:
   - UNITY_UI_ALPHACLIP
   - _ALPHATEST_ON
+  - _NORMALMAP
   m_InvalidKeywords:
   - MTOON_OUTLINE_COLOR_FIXED
   - MTOON_OUTLINE_WIDTH_WORLD
@@ -590,7 +591,7 @@ Material:
     - _UseAudioLink: 0
     - _UseBacklight: 0
     - _UseBump2ndMap: 0
-    - _UseBumpMap: 0
+    - _UseBumpMap: 1
     - _UseClippingCanceller: 0
     - _UseEmission: 0
     - _UseEmission2nd: 0

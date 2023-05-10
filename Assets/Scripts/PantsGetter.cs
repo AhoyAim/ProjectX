@@ -29,6 +29,7 @@ public class PantsGetter : MonoBehaviour
             if(!girl.isNaked)
             {
                 girl.isNaked = true;
+                girl.mosaic.enabled = true;
                 pantsCalc.GetPants();
             }
         }
@@ -47,6 +48,7 @@ public class PantsGetter : MonoBehaviour
         {
             girl.BlowAway(transform.forward * vacuumReleasPower);
             Debug.Log($"{girl}‚ðBlowAway{transform.forward}‚µ‚½");
+            // girl.currentState = GirlController_.State.BlownAway;
         }
     }
 
