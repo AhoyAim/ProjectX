@@ -19,7 +19,7 @@ public class GirlController_ : MonoBehaviour
         Approch,
         Attack,
         Damaged,
-        //Stan,
+        Stan,
         Vacuumed,
         HyperVacuumed,
         BlownAway,
@@ -132,9 +132,9 @@ public class GirlController_ : MonoBehaviour
                 OnDamaged();
                 break;
 
-            //case State.Stan:
-            //    OnStan();
-                //break;
+            case State.Stan:
+                OnStan();
+                break;
             default:
                 break;
         }
@@ -283,14 +283,14 @@ public class GirlController_ : MonoBehaviour
     /// </summary>
     public void CheckVaccumedAndDamaged()
     {
-        if(currentState == State.Damaged || currentState == State.Vacuumed || currentState == State.HyperVacuumed || currentState == State.BlownAway)
+        if(currentState == State.Damaged || currentState == State.Stan || currentState == State.Vacuumed || currentState == State.HyperVacuumed || currentState == State.BlownAway)
         {
             return;
         }
 
         if(CheckVaccumedNow())
         {
-            animator.Play("Vacuumed");
+            //animator.Play("Vacuumed");
             currentState = State.Vacuumed;
            
         }
