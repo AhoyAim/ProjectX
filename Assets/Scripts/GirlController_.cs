@@ -132,9 +132,9 @@ public class GirlController_ : MonoBehaviour
                 OnDamaged();
                 break;
 
-            case State.Stan:
-                OnStan();
-                break;
+            //case State.Stan:
+            //    OnStan();
+                //break;
             default:
                 break;
         }
@@ -142,6 +142,50 @@ public class GirlController_ : MonoBehaviour
         CheckVaccumedAndDamaged();
 
 
+    }
+
+    /// <summary>
+    /// currentStateを引数のstateへ切り替え、アニメーターにも対応したパラメーターを与える
+    /// </summary>
+    /// <param name="state">ここに入力したステートへ切り替わる</param>
+    public void ChangeState(State state)
+    {
+        currentState = state;
+
+        switch (currentState)
+        {
+            case State.Normal:
+                animator.SetBool(animIDNavmeshAgent, true);
+                break;
+            case State.Notice:
+                animator.SetBool(animIDNotice, true);
+                break;
+            case State.Runaway:
+                animator.SetBool(animIDNavmeshAgent, true);
+                break;
+            case State.Approch:
+                animator.SetBool(animIDNavmeshAgent, true);
+                break;
+            case State.Attack:
+                animator.SetBool(animIDAttack, true);
+                break;
+            case State.Damaged:
+                animator.SetBool(animIDDamaged, true);
+                break;
+            //case State.Stan:
+            //    break;
+            case State.Vacuumed:
+                animator.SetBool(animIDVacuumed, true);
+                break;
+            case State.HyperVacuumed:
+                animator.SetBool(animIDHyperVcuuned, true);
+                break;
+            case State.BlownAway:
+                animator.SetBool(animIDBlowAway, true);
+                break;
+            default:
+                break;
+        }
     }
     /// <summary>
     /// 現在のステートに応じたトリガーをsetし、アニメーションを再生する。
@@ -290,9 +334,7 @@ public class GirlController_ : MonoBehaviour
 
         if(CheckVaccumedNow())
         {
-            //animator.Play("Vacuumed");
-            currentState = State.Vacuumed;
-           
+            ChangeState(State.Vacuumed);   
         }
         
     }
@@ -383,7 +425,7 @@ public class GirlController_ : MonoBehaviour
         // 次のステートに遷移できないかチェック
         if(!CheckNoticeable())
         {
-            currentState = State.Normal;
+            ChangeState(State.Normal);
         }
 
     }
@@ -440,7 +482,7 @@ public class GirlController_ : MonoBehaviour
         // 次のステートに遷移できないかチェック
         if (CheckNoticeable())
         {
-            currentState = State.Notice;
+            ChangeState(State.Notice);
         }
     }
 
@@ -466,11 +508,11 @@ public class GirlController_ : MonoBehaviour
         {
             if (isNaked)
             {
-                currentState = State.Approch;
+                ChangeState(State.Approch);
             }
             else
             {
-                currentState = State.Runaway;
+                ChangeState(State.Runaway);
             }
         }
         
@@ -514,7 +556,7 @@ public class GirlController_ : MonoBehaviour
         // 次のステートに遷移できないかチェック
         if (CheckAttackable())
         {
-            currentState = State.Attack;
+            ChangeState(State.Attack);
         }
         else if(!CheckNoticeable())
         {
@@ -524,17 +566,17 @@ public class GirlController_ : MonoBehaviour
                 // noticeDistance以上にplayerと離れてはいるが、直接視認できているとき
                 if (hitinfo.collider.CompareTag("Player"))
                 {
-                    currentState = State.Approch;
+                    ChangeState(State.Approch);
                 }
                 // noticeDistance以上にplayerと離れていて、直接視認できないとき
                 else
                 {
-                    currentState = State.Normal;
+                    ChangeState(State.Normal);
                 }
             }
             else
             {
-                currentState = State.Normal;
+                ChangeState(State.Normal);
             }
         }
     }
@@ -555,7 +597,7 @@ public class GirlController_ : MonoBehaviour
         // 次のステートに遷移できないかチェック
         if (IsChangeableAnimeState("Attack"))
         {
-            currentState = State.Approch;
+            ChangeState(State.Approch);
         }
     }
 
@@ -579,7 +621,7 @@ public class GirlController_ : MonoBehaviour
         // 次のステートに遷移できないかチェック
         if (pantsGetter.hyperVacuuming)
         {
-            currentState = State.HyperVacuumed;
+            ChangeState(State.HyperVacuumed);
             return;
         }
 
@@ -590,7 +632,7 @@ public class GirlController_ : MonoBehaviour
         else if (!pantsGetter.vacuuming)
         {
             TeardownVacuumed();
-            currentState = State.Normal;
+            ChangeState(State.Normal);
         }
     }
     /// <summary>
@@ -613,8 +655,7 @@ public class GirlController_ : MonoBehaviour
         // 次のステートに遷移できないかチェック
         if (pantsGetter.vacuumReleasing)
         {
-            currentState = State.BlownAway;
-            animator.SetBool(animIDBlowAway, true);
+            ChangeState(State.BlownAway);
             //BlowAway(playerTransform.forward*20);
             Debug.Log(this.name);
             //Debug.Break();
@@ -656,11 +697,11 @@ public class GirlController_ : MonoBehaviour
                 
                 rb.velocity = Vector3.zero;
                 this.tag = "Girl";
-                currentState = State.Damaged;
+                ChangeState(State.Damaged);
                 if(collision.gameObject.CompareTag("Girl"))
                 {
                     var collisionGirl = collision.gameObject.GetComponent<GirlController_>();
-                    collisionGirl.currentState = State.Damaged;
+                    collisionGirl.ChangeState(State.Damaged);
                     if (collisionGirl.navMeshAgent.enabled)
                     {
                         if (collisionGirl.navMeshAgent.hasPath)
@@ -685,7 +726,7 @@ public class GirlController_ : MonoBehaviour
         {
             return;
         }
-        currentState = State.Normal;
+        ChangeState(State.Normal);
         girlCollider.enabled = true;
        
     }
@@ -711,7 +752,7 @@ public class GirlController_ : MonoBehaviour
         {
             return;
         }
-        currentState = State.Normal;
+        ChangeState(State.Normal);
         animator.SetTrigger(animIDNavmeshAgent);
     }
 
