@@ -482,6 +482,7 @@ public class GirlController_ : MonoBehaviour
         // 次のステートに遷移できないかチェック
         if (CheckNoticeable())
         {
+            girlTransform.LookAt(playerTransform.position);
             ChangeState(State.Notice);
         }
     }
@@ -732,13 +733,13 @@ public class GirlController_ : MonoBehaviour
     }
     void OnStan()
     {
-        //if(isEnable)
+        //if(_isEnable)
         //{
-        //    isEnable = false;
+        //    _isEnable = false;
 
         //TeardownVacuumed();
 
-        //    isEnable = true;
+        //    _isEnable = true;
 
         //    StartCoroutine(DelayCoroutine(() =>
         //    {

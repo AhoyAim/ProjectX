@@ -1,8 +1,8 @@
 using StarterAssets;
+using System.Collections;
 using UnityEngine;
 #if ENABLE_INPUT_SYSTEM && STARTER_ASSETS_PACKAGES_CHECKED
 using UnityEngine.InputSystem;
-using UnityEngine.Windows;
 #endif
 
 /* Note: animations are called via the controller for both the character and capsule using animator null checks
@@ -122,9 +122,16 @@ public class PlayerContoroller : MonoBehaviour
     private CharacterController _controller;
     private PlayerInputs _input;
     private GameObject _mainCamera;
-    private bool isEnable;
+    private bool _isEnable;
+    public float _vacuumTime = 0.0f;//privateに戻す
+    public int _vacuumComboCount = 0;//privateに戻す
+    private Coroutine _comboChainTimer;
 
+
+
+    private const float _toHyperVacuumedTime = 0.75f;
     private const float _threshold = 0.01f;
+    private const int _toAttackCount = 3;
 
     private bool _hasAnimator;
 
@@ -174,11 +181,13 @@ public class PlayerContoroller : MonoBehaviour
         _hasAnimator = TryGetComponent(out _animator);
 
         currentState = State.Normal;
-        isEnable = true;
+        _isEnable = true;
     }
 
     private void Update()
     {
+        Debug.Log(_animator.GetCurrentAnimatorStateInfo(0).IsName("Idle Walk Run Blend"));
+
         switch (currentState)
         {
             case State.Normal:
@@ -194,6 +203,7 @@ public class PlayerContoroller : MonoBehaviour
                 OnVcuumRelese();
                 break;
             case State.Attack:
+                OnAttack();
                 break;
             case State.Damaged:
                 break;
@@ -439,6 +449,12 @@ public class PlayerContoroller : MonoBehaviour
         }
     }
 
+    private IEnumerator ComboChainTimer()
+    {
+        yield return new WaitForSeconds(0.4f);
+        _vacuumComboCount = 0; 
+    }
+
     void OnNormal()
     {
        
@@ -447,7 +463,7 @@ public class PlayerContoroller : MonoBehaviour
         Move();
         pantsGetter.Idle();
 
-        if (_input.vaccum || _input.hyperVaccum)
+        if (_animator.GetCurrentAnimatorStateInfo(0).IsName("Idle Walk Run Blend") && Input.GetButton("Fire1"))
         {
             currentState = State.Vacuum;
         }
@@ -456,34 +472,58 @@ public class PlayerContoroller : MonoBehaviour
     void OnVacuum()
     {
         _animator.SetFloat(_animIDSpeed, 0);
+
+        //カメラの方向を向かせる
         float rotation = Mathf.SmoothDampAngle(transform.eulerAngles.y, CinemachineCameraTarget.transform.eulerAngles.y, ref _rotationVelocity,
                RotationSmoothTime);
         transform.rotation = Quaternion.Euler(0.0f, rotation, 0.0f);
-        if (isEnable)
+
+        //vacuum関連のフィールドを更新
+        _vacuumTime += Time.deltaTime;
+        
+
+        if (_isEnable)
         {
-            isEnable = false;
-            //Vector3 horizontalCameraDirection = CinemachineCameraTarget.transform.forward;
-            //horizontalCameraDirection.y = transform.position.y;
-            //horizontalCameraDirection.Normalize();
-            //transform.LookAt(transform.position + horizontalCameraDirection);
+            _isEnable = false;
+            _vacuumComboCount++;
+            if(_vacuumComboCount == 3)
+            {
+                _vacuumComboCount = 0;
+                _vacuumTime = 0.0f;
+                currentState = State.Attack;
+                return;
+            }
+
+            if(_comboChainTimer != null)
+            {
+                StopCoroutine(_comboChainTimer );
+            }
+            _comboChainTimer = StartCoroutine(ComboChainTimer());
+  
             pantsGetter.OnVacuum();
         }
         Debug.Log("Vaccumだよ");
 
-        if (_input.hyperVaccum)
+        if (_vacuumTime >= _toHyperVacuumedTime)
         {
-            isEnable = true;
+            _isEnable = true;
+            //StopCoroutine(_comboChainTimer);
+            _vacuumComboCount = 0;
+            _vacuumTime = 0f;
             currentState = State.HyperVacuum;
         }
-        if (_input.vaccumRelese)
+        if (Input.GetButtonUp("Fire1"))
         {
-            isEnable = true;
+            _isEnable = true;
+            //StopCoroutine(_comboChainTimer);
+            _vacuumTime = 0f;
             pantsGetter.Idle();
             currentState = State.Normal;
         }
     }
     void OnHyperVcuum()
     {
+        _animator.SetBool("Vacuum", true);
         Debug.Log("HyperVaccumだよ");
         float rotation = Mathf.SmoothDampAngle(transform.eulerAngles.y, CinemachineCameraTarget.transform.eulerAngles.y, ref _rotationVelocity,
                RotationSmoothTime);
@@ -492,24 +532,31 @@ public class PlayerContoroller : MonoBehaviour
         pantsGetter.OnVacuum();
         pantsGetter.OnHyperVacuuming();
 
-        if (_input.vaccumRelese)
+        if (Input.GetButtonUp("Fire1"))
         {
             currentState = State.VacuumRelease;
+            _animator.SetBool("Vacuum", false);
         }
     }
     void OnVcuumRelese()
     {
-        if(isEnable)
+        if(_isEnable)
         {
             pantsGetter.OnVacuumRelease();
-            isEnable = false;
+            _isEnable = false;
         }
         else
         {
-            isEnable = true;
+            _isEnable = true;
             currentState= State.Normal;
         }
 
+    }
+    void OnAttack()
+    {
+        Debug.Log("Attack");
+        Debug.Break();
+        currentState = State.Normal;
     }
 }
 
