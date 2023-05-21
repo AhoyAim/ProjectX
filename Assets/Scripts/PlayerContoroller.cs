@@ -186,7 +186,20 @@ public class PlayerContoroller : MonoBehaviour
 
     private void Update()
     {
-        Debug.Log(_animator.GetCurrentAnimatorStateInfo(0).IsName("Idle Walk Run Blend"));
+        if(Input.GetKeyDown(KeyCode.Z))
+        {
+            if(!_animator.GetBool("Test"))
+            {
+                _animator.SetLayerWeight(_animator.GetLayerIndex("Pose"), 0);
+                _animator.SetBool("Test", true);
+            }
+            else
+            {
+                _animator.SetLayerWeight(_animator.GetLayerIndex("Pose"), 1);
+                _animator.SetBool("Test", false);
+            }
+            
+        }
 
         switch (currentState)
         {
