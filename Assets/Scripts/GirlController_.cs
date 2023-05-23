@@ -7,6 +7,7 @@ using UnityEngine.AI;
 
 public class GirlController_ : MonoBehaviour
 {
+    
     public MeshRenderer mosaic;
     public Transform playerTransform;
     public Transform sphereCastRoot;
@@ -52,6 +53,7 @@ public class GirlController_ : MonoBehaviour
     private int animIDNotice;
     private int animIDStan;
     private float girlColliderRdius;
+    public float stopingDistans = 1f;
     private float vaccumedableDistance;
     private float vaccumedableAngle;
     private bool isRunaway;
@@ -551,7 +553,7 @@ public class GirlController_ : MonoBehaviour
         }
         navMeshAgent.speed = runSpeed;
         animator.SetFloat(animIDSpeed, navMeshAgent.velocity.magnitude, 0.25f, Time.deltaTime);
-        navMeshAgent.stoppingDistance = 1.5f;
+        navMeshAgent.stoppingDistance = stopingDistans;
         navMeshAgent.destination = playerTransform.position;
 
         // 次のステートに遷移できないかチェック
@@ -589,7 +591,6 @@ public class GirlController_ : MonoBehaviour
         //Debug.Log("Attackだよーん");// ここにAttackアニメーションに関する実装をするアニメーションイベントでコライダーをOnし、接触判定する
         if (!animator.GetBool(animIDAttack))
         {
-            //girlTransform.LookAt(playerTransform.position);
             animator.SetBool(animIDAttack, true);
         }
         girlTransform.LookAt(playerTransform.position);

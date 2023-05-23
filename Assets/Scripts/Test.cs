@@ -4,12 +4,13 @@ using UnityEngine;
 
 public class Test : MonoBehaviour
 {
-    private void OnTriggerStay(Collider other)
+    private void OnTriggerEnter(Collider other)
     {
-        if(other.CompareTag("Pants") && Input.GetKeyDown(KeyCode.Z))
+        if(other.CompareTag("Player"))
         {
-            Debug.Log("Test");
+          
         }
     }
+   
 
 }

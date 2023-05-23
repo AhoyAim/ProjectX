@@ -14,7 +14,7 @@ using UnityEngine.InputSystem;
 #if ENABLE_INPUT_SYSTEM && STARTER_ASSETS_PACKAGES_CHECKED
     [RequireComponent(typeof(PlayerInput))]
 #endif
-public class PlayerContoroller : MonoBehaviour
+public class PlayerContoroller : MonoBehaviour, IDamageable
 {
     public PantsGetter pantsGetter;
     public enum State
@@ -119,6 +119,7 @@ public class PlayerContoroller : MonoBehaviour
     private PlayerInput _playerInput;
 #endif
     private Animator _animator;
+    private Rigidbody _rb;
     private CharacterController _controller;
     private PlayerInputs _input;
     private GameObject _mainCamera;
@@ -166,6 +167,7 @@ public class PlayerContoroller : MonoBehaviour
         _hasAnimator = TryGetComponent(out _animator);
         _controller = GetComponent<CharacterController>();
         _input = GetComponent<PlayerInputs>();
+        _rb = GetComponent<Rigidbody>();
 #if ENABLE_INPUT_SYSTEM && STARTER_ASSETS_PACKAGES_CHECKED
         _playerInput = GetComponent<PlayerInput>();
 #else
@@ -201,32 +203,34 @@ public class PlayerContoroller : MonoBehaviour
             
         }
 
-        switch (currentState)
-        {
-            case State.Normal:
-                OnNormal();
-                break;
-            case State.Vacuum:
-                OnVacuum();
-                break;
-            case State.HyperVacuum:
-                OnHyperVcuum();
-                break;
-            case State.VacuumRelease:
-                OnVcuumRelese();
-                break;
-            case State.Attack:
-                OnAttack();
-                break;
-            case State.Damaged:
-                break;
-            case State.Stan:
-                break;
-            case State.Dead:
-                break;
-            default:
-                break;
-        }
+        _controller.SimpleMove(Vector3.forward * 3);
+
+        //switch (currentState)
+        //{
+        //    case State.Normal:
+        //        OnNormal();
+        //        break;
+        //    case State.Vacuum:
+        //        OnVacuum();
+        //        break;
+        //    case State.HyperVacuum:
+        //        OnHyperVcuum();
+        //        break;
+        //    case State.VacuumRelease:
+        //        OnVcuumRelese();
+        //        break;
+        //    case State.Attack:
+        //        OnAttack();
+        //        break;
+        //    case State.Damaged:
+        //        break;
+        //    case State.Stan:
+        //        break;
+        //    case State.Dead:
+        //        break;
+        //    default:
+        //        break;
+        //}
 
     }
 
@@ -442,6 +446,8 @@ public class PlayerContoroller : MonoBehaviour
             GroundedRadius);
     }
 
+    
+
     private void OnFootstep(AnimationEvent animationEvent)
     {
         if (animationEvent.animatorClipInfo.weight > 0.5f)
@@ -570,6 +576,32 @@ public class PlayerContoroller : MonoBehaviour
         Debug.Log("Attack");
         Debug.Break();
         currentState = State.Normal;
+    }
+
+    public bool DamageJudge()
+    {
+        return currentState != State.Damaged;
+    }
+
+    public void DamageBehaviour(Vector3 direction)
+    {
+        Debug.Log("ぎゃーーーーー");
+        transform.LookAt(transform.position + direction);
+        _controller.SimpleMove(direction * 2);
+        if (!_animator.GetBool("Test"))
+        {
+            _animator.SetLayerWeight(_animator.GetLayerIndex("Pose"), 0);
+            _animator.SetBool("Test", true);
+            currentState = State.Damaged;
+        }
+    }
+
+    public void Damage(Vector3 direction)
+    {
+        if(DamageJudge())
+        {
+            DamageBehaviour(direction);
+        }
     }
 }
 
