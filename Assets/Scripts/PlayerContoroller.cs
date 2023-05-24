@@ -3,6 +3,7 @@ using System.Collections;
 using UnityEngine;
 #if ENABLE_INPUT_SYSTEM && STARTER_ASSETS_PACKAGES_CHECKED
 using UnityEngine.InputSystem;
+using DG.Tweening;
 #endif
 
 /* Note: animations are called via the controller for both the character and capsule using animator null checks
@@ -124,6 +125,8 @@ public class PlayerContoroller : MonoBehaviour, IDamageable
     private PlayerInputs _input;
     private GameObject _mainCamera;
     private bool _isEnable;
+    private bool _isInvincible = false;
+    public float invincibleTime = 5.0f;//privateに戻す
     public float _vacuumTime = 0.0f;//privateに戻す
     public int _vacuumComboCount = 0;//privateに戻す
     private Coroutine _comboChainTimer;
@@ -203,34 +206,35 @@ public class PlayerContoroller : MonoBehaviour, IDamageable
             
         }
 
-        _controller.SimpleMove(Vector3.forward * 3);
 
-        //switch (currentState)
-        //{
-        //    case State.Normal:
-        //        OnNormal();
-        //        break;
-        //    case State.Vacuum:
-        //        OnVacuum();
-        //        break;
-        //    case State.HyperVacuum:
-        //        OnHyperVcuum();
-        //        break;
-        //    case State.VacuumRelease:
-        //        OnVcuumRelese();
-        //        break;
-        //    case State.Attack:
-        //        OnAttack();
-        //        break;
-        //    case State.Damaged:
-        //        break;
-        //    case State.Stan:
-        //        break;
-        //    case State.Dead:
-        //        break;
-        //    default:
-        //        break;
-        //}
+
+        switch (currentState)
+        {
+            case State.Normal:
+                OnNormal();
+                break;
+            case State.Vacuum:
+                OnVacuum();
+                break;
+            case State.HyperVacuum:
+                OnHyperVcuum();
+                break;
+            case State.VacuumRelease:
+                OnVcuumRelese();
+                break;
+            case State.Attack:
+                OnAttack();
+                break;
+            case State.Damaged:
+                OnDamaged();
+                break;
+            case State.Stan:
+                break;
+            case State.Dead:
+                break;
+            default:
+                break;
+        }
 
     }
 
@@ -482,7 +486,7 @@ public class PlayerContoroller : MonoBehaviour, IDamageable
         Move();
         pantsGetter.Idle();
 
-        if (_animator.GetCurrentAnimatorStateInfo(0).IsName("Idle Walk Run Blend") && Input.GetButton("Fire1"))
+        if (_animator.GetCurrentAnimatorStateInfo(0).IsName("Normal") && Input.GetButton("Fire1"))
         {
             currentState = State.Vacuum;
         }
@@ -578,22 +582,56 @@ public class PlayerContoroller : MonoBehaviour, IDamageable
         currentState = State.Normal;
     }
 
+    void OnDamaged()
+    {
+        SetInvincible();
+        if (_animator.GetCurrentAnimatorStateInfo(0).IsName("Normal") && !_animator.IsInTransition(0))
+        {
+            currentState = State.Normal;
+        }
+    }
+
     public bool DamageJudge()
     {
-        return currentState != State.Damaged;
+        return currentState != State.Damaged && !_isInvincible;
     }
 
     public void DamageBehaviour(Vector3 direction)
     {
         Debug.Log("ぎゃーーーーー");
         transform.LookAt(transform.position + direction);
-        _controller.SimpleMove(direction * 2);
-        if (!_animator.GetBool("Test"))
-        {
-            _animator.SetLayerWeight(_animator.GetLayerIndex("Pose"), 0);
-            _animator.SetBool("Test", true);
-            currentState = State.Damaged;
-        }
+
+
+        Vector3 StartValue = transform.position;
+        Vector3 TargeValue = transform.position + direction * 10;
+        float TweenTime = 1.0f;
+        _animator.SetLayerWeight(_animator.GetLayerIndex("Pose"), 0);
+        _animator.SetBool("Test", true);
+        currentState = State.Damaged;
+
+        DOTween.To
+        (
+            () => StartValue,       
+            (x) =>
+            {
+                StartValue = x;
+                Debug.Log(StartValue);
+                _controller.Move(StartValue - transform.position);
+            }, 
+            TargeValue,     
+            TweenTime		
+        )
+        .OnComplete
+        (
+            () =>
+            {
+                Debug.Log("吹き飛び終わりました");
+                _animator.SetBool("Test", false);
+            }
+        );
+
+       
+
     }
 
     public void Damage(Vector3 direction)
@@ -601,6 +639,21 @@ public class PlayerContoroller : MonoBehaviour, IDamageable
         if(DamageJudge())
         {
             DamageBehaviour(direction);
+        }
+    }
+
+    IEnumerator InitInvincible()
+    {
+        _isInvincible = true;
+        yield return new WaitForSeconds(invincibleTime);
+        _isInvincible = false;
+    }
+
+    void SetInvincible()
+    {
+        if(!_isInvincible)
+        {
+            StartCoroutine(InitInvincible());
         }
     }
 }

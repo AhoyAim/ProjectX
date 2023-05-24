@@ -10466,6 +10466,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8372635708516917607, guid: d24a0d7fdd24d074f82e8e2b97203346,
         type: 3}
+      propertyPath: currentState
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8372635708516917607, guid: d24a0d7fdd24d074f82e8e2b97203346,
+        type: 3}
       propertyPath: LockCameraPosition
       value: 0
       objectReference: {fileID: 0}
