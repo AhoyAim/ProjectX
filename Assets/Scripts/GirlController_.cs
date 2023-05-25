@@ -7,8 +7,6 @@ using UnityEngine.AI;
 
 public class GirlController_ : MonoBehaviour
 {
-    
-    public MeshRenderer mosaic;
     public Transform playerTransform;
     public Transform sphereCastRoot;
     public PantsGetter pantsGetter;
@@ -32,6 +30,7 @@ public class GirlController_ : MonoBehaviour
     [Space(10)]
     public float noticeDistance = 10;
     public float atttackableDistance = 2f;
+    public float approchDistance = 1f;
     [Range(0.1f, 2f)]
     public float minRunawayTime = 0.1f;
     [Range(2.1f, 5f)]
@@ -39,6 +38,11 @@ public class GirlController_ : MonoBehaviour
     public float runSpeed;
     public float walkSpeed;
     public float stanTime = 2f;
+    [Space(10)]
+    public MeshRenderer mosaic;
+    public Transform bodyTransform;
+    public Material pantsedSkinedMaterial;
+    public Material nakedSkinedMaterial;
 
     private const RigidbodyConstraints a = RigidbodyConstraints.None;
     private CapsuleCollider girlCollider;
@@ -55,7 +59,6 @@ public class GirlController_ : MonoBehaviour
     private int animIDNotice;
     private int animIDStan;
     private float girlColliderRdius;
-    public float approchDistance = 1f;
     private float vaccumedableDistance;
     private float vaccumedableAngle;
     private bool isRunaway;
@@ -63,6 +66,7 @@ public class GirlController_ : MonoBehaviour
     private Vector3 toPlayerDirection;
     private Vector3 blowAwayDirection;
     private Rigidbody rb;
+    private SkinnedMeshRenderer skinnedMeshRenderer;
 
     DamagedChecker damagedChecker;
 
@@ -89,6 +93,7 @@ public class GirlController_ : MonoBehaviour
         girlTransform = transform;
         rb = GetComponent<Rigidbody>();
         rb.isKinematic = true;
+        skinnedMeshRenderer = bodyTransform.GetComponent<SkinnedMeshRenderer>();
 
        
     }
@@ -148,7 +153,7 @@ public class GirlController_ : MonoBehaviour
                 break;
         }
 
-        CheckVaccumedAndDamaged();
+        CheckVaccumed();
 
 
     }
@@ -335,9 +340,9 @@ public class GirlController_ : MonoBehaviour
    
   
     /// <summary>
-    /// Anystateから遷移できるVacuumステートとDamagedステートへのフラグをチェックし可能なら遷移する
+    /// Anystateから遷移できるVacuumステートへのフラグをチェックし可能なら遷移する
     /// </summary>
-    public void CheckVaccumedAndDamaged()
+    public void CheckVaccumed()
     {
         if(currentState == State.Damaged || currentState == State.Stan || currentState == State.Vacuumed || currentState == State.HyperVacuumed || currentState == State.BlownAway)
         {
@@ -349,6 +354,22 @@ public class GirlController_ : MonoBehaviour
             ChangeState(State.Vacuumed);   
         }
         
+    }
+
+    public void UpdatePants()
+    {
+        if(isNaked)
+        {
+            Material[] newMaterials = skinnedMeshRenderer.materials;
+            newMaterials[0] = nakedSkinedMaterial;
+            skinnedMeshRenderer.materials = newMaterials;
+        }
+        else
+        {
+            Material[] newMaterials = skinnedMeshRenderer.materials;
+            newMaterials[0] = pantsedSkinedMaterial;
+            skinnedMeshRenderer.materials = newMaterials;
+        }
     }
 
 
@@ -627,15 +648,14 @@ public class GirlController_ : MonoBehaviour
         }
         //Debug.Log("Vaccumedされてます"); //Vacuumedアニメを再生する
         girlTransform.LookAt(2 * girlTransform.position - playerTransform.position);
-       
-        SetupVacuumed();
 
-        //Debug.Log(!IsChangeableAnimeState("Vacuumed"));
-        //Debug.Log(pantsGetter.hyperVacuuming);
-        //Debug.Log(!pantsGetter.vacuuming);
+        navMeshAgent.isStopped = true;
+        //SetupVacuumed();
+
         // 次のステートに遷移できないかチェック
         if (pantsGetter.hyperVacuuming)
         {
+            navMeshAgent.isStopped = false;
             ChangeState(State.HyperVacuumed);
             return;
         }
@@ -646,7 +666,8 @@ public class GirlController_ : MonoBehaviour
         }
         else if (!pantsGetter.vacuuming)
         {
-            TeardownVacuumed();
+            navMeshAgent.isStopped = false;
+            //TeardownVacuumed();
             ChangeState(State.Normal);
         }
     }

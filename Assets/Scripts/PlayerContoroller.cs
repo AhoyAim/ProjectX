@@ -483,7 +483,11 @@ public class PlayerContoroller : MonoBehaviour, IDamageable
 
     void OnNormal()
     {
-       
+        if(_animator.GetLayerWeight(_animator.GetLayerIndex("Pose")) != 1f)
+        {
+            _animator.SetLayerWeight(_animator.GetLayerIndex("Pose"), 1);
+        }
+        
         JumpAndGravity();
         GroundedCheck();
         Move();

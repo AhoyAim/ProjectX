@@ -600,9 +600,9 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 811693032172427124}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0, y: -0.048, z: 0}
-  m_LocalScale: {x: 0.2, y: 0.2, z: 0.2}
-  m_ConstrainProportionsScale: 0
+  m_LocalPosition: {x: -0, y: -0.037, z: -0}
+  m_LocalScale: {x: 0.1, y: 0.1, z: 0.1}
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 5932179990065011879}
   m_RootOrder: 3
@@ -1457,8 +1457,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5db217dc4e63b6d42b248bf778e05564, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  stopingDistans: 1
-  mosaic: {fileID: 811693032172427127}
   playerTransform: {fileID: 0}
   sphereCastRoot: {fileID: 2689857901247494440}
   pantsGetter: {fileID: 0}
@@ -1466,11 +1464,17 @@ MonoBehaviour:
   isNaked: 0
   noticeDistance: 10
   atttackableDistance: 2
+  approchDistance: 1
   minRunawayTime: 2
   maxRunawayTime: 5
   runSpeed: 3.5
   walkSpeed: 2
   stanTime: 2
+  mosaic: {fileID: 811693032172427127}
+  bodyTransform: {fileID: 655315374036474559}
+  pantsedSkinedMaterial: {fileID: 2100000, guid: fc7d8a2830c05ef48ad7b2a46514bd03,
+    type: 2}
+  nakedSkinedMaterial: {fileID: 2100000, guid: 50b31dd502e7baa4ebb294c0a0132f23, type: 2}
 --- !u!114 &6736026144615727948
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4685,13 +4689,16 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7916412725205729033}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: eb54b22c0dd6bbb47ba8b169c283d365, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   attackTrigger: {fileID: 513228743529732952}
   targetTagName: Player
+  addtionalAttackEvent:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!135 &513228743529732952
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -4701,7 +4708,7 @@ SphereCollider:
   m_GameObject: {fileID: 7916412725205729033}
   m_Material: {fileID: 0}
   m_IsTrigger: 1
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 2
   m_Radius: 0.24
   m_Center: {x: 0, y: 0, z: 0}

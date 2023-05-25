@@ -32,6 +32,7 @@ public class PantsGetter : MonoBehaviour
             {
                 girl.isNaked = true;
                 girl.mosaic.enabled = true;
+                girl.UpdatePants();
                 pantsCalc.GetPants();
             }
         }
