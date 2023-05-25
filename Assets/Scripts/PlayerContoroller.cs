@@ -187,6 +187,9 @@ public class PlayerContoroller : MonoBehaviour, IDamageable
 
         currentState = State.Normal;
         _isEnable = true;
+
+
+        
     }
 
     private void Update()
@@ -263,7 +266,7 @@ public class PlayerContoroller : MonoBehaviour, IDamageable
         // update animator if using character
         if (_hasAnimator)
         {
-            _animator.SetBool(_animIDGrounded, Grounded);
+            _animator.SetBool(_animIDGrounded, Grounded || _controller.isGrounded);
         }
     }
 
@@ -585,7 +588,7 @@ public class PlayerContoroller : MonoBehaviour, IDamageable
     void OnDamaged()
     {
         SetInvincible();
-        if (_animator.GetCurrentAnimatorStateInfo(0).IsName("Normal") && !_animator.IsInTransition(0))
+        if (_animator.GetCurrentAnimatorStateInfo(0).IsName("Normal") && !_animator.IsInTransition(0) && !_animator.GetBool("Test"))
         {
             currentState = State.Normal;
         }
@@ -615,7 +618,6 @@ public class PlayerContoroller : MonoBehaviour, IDamageable
             (x) =>
             {
                 StartValue = x;
-                Debug.Log(StartValue);
                 _controller.Move(StartValue - transform.position);
             }, 
             TargeValue,     

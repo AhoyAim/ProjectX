@@ -53,7 +53,7 @@ public class GirlController_ : MonoBehaviour
     private int animIDNotice;
     private int animIDStan;
     private float girlColliderRdius;
-    public float stopingDistans = 1f;
+    public float approchDistance = 1f;
     private float vaccumedableDistance;
     private float vaccumedableAngle;
     private bool isRunaway;
@@ -553,7 +553,7 @@ public class GirlController_ : MonoBehaviour
         }
         navMeshAgent.speed = runSpeed;
         animator.SetFloat(animIDSpeed, navMeshAgent.velocity.magnitude, 0.25f, Time.deltaTime);
-        navMeshAgent.stoppingDistance = stopingDistans;
+        navMeshAgent.stoppingDistance = approchDistance;
         navMeshAgent.destination = playerTransform.position;
 
         // 次のステートに遷移できないかチェック
@@ -593,7 +593,10 @@ public class GirlController_ : MonoBehaviour
         {
             animator.SetBool(animIDAttack, true);
         }
-        girlTransform.LookAt(playerTransform.position);
+        toPlayerDirection = playerTransform.position - girlTransform.position;
+        toPlayerDirection.y = 0;
+        girlTransform.rotation = Quaternion.LookRotation(toPlayerDirection);
+        //girlTransform.LookAt(playerTransform.position);
 
 
         // 次のステートに遷移できないかチェック

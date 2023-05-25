@@ -29,7 +29,7 @@ public class Attack : MonoBehaviour
             if(iDamageable != null)
             {
                 Vector3 direction = other.transform.position - transform.position;
-                direction.y = other.transform.position.y;
+                direction.y = 0;
                 direction.Normalize();
                 iDamageable.Damage(direction);
             }
