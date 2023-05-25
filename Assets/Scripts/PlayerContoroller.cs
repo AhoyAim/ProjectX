@@ -526,9 +526,10 @@ public class PlayerContoroller : MonoBehaviour, IDamageable
             }
             _comboChainTimer = StartCoroutine(ComboChainTimer());
   
-            pantsGetter.OnVacuum();
+            //pantsGetter.OnVacuum();
         }
         Debug.Log("Vaccumだよ");
+        pantsGetter.OnVacuum();
 
         if (_vacuumTime >= _toHyperVacuumedTime)
         {
@@ -581,7 +582,7 @@ public class PlayerContoroller : MonoBehaviour, IDamageable
     void OnAttack()
     {
         Debug.Log("Attack");
-        Debug.Break();
+        
         currentState = State.Normal;
     }
 
@@ -594,23 +595,34 @@ public class PlayerContoroller : MonoBehaviour, IDamageable
         }
     }
 
+    /// <summary>
+    /// IDamageableの実装。ダメージを受けられる状態か判断する。
+    /// 無敵状態フラグの_isInvincibleがfalseでDamagedステート以外　＝＞　true
+    /// </summary>
+    /// <returns></returns>
     public bool DamageJudge()
     {
         return currentState != State.Damaged && !_isInvincible;
     }
-
+    /// <summary>
+    /// IDamageableの実装。ダメージの内容。
+    /// 吹き飛ばされる方向を見て、パンツゲッターのVacuumingFails()を行い、座標を移動しつつアニメーションします。
+    /// </summary>
+    /// <param name="direction"></param>
     public void DamageBehaviour(Vector3 direction)
     {
         Debug.Log("ぎゃーーーーー");
         transform.LookAt(transform.position + direction);
 
+        pantsGetter.VacuumingFails();
+
+        _animator.SetLayerWeight(_animator.GetLayerIndex("Pose"), 0);
+        _animator.SetBool("Test", true);
+        currentState = State.Damaged;
 
         Vector3 StartValue = transform.position;
         Vector3 TargeValue = transform.position + direction * 10;
         float TweenTime = 1.0f;
-        _animator.SetLayerWeight(_animator.GetLayerIndex("Pose"), 0);
-        _animator.SetBool("Test", true);
-        currentState = State.Damaged;
 
         DOTween.To
         (
@@ -635,7 +647,10 @@ public class PlayerContoroller : MonoBehaviour, IDamageable
        
 
     }
-
+    /// <summary>
+    /// IDamageableの実装。ダメージを実行。
+    /// </summary>
+    /// <param name="direction"></param>
     public void Damage(Vector3 direction)
     {
         if(DamageJudge())
@@ -644,18 +659,21 @@ public class PlayerContoroller : MonoBehaviour, IDamageable
         }
     }
 
-    IEnumerator InitInvincible()
+    IEnumerator InvincibleCoroutine()
     {
         _isInvincible = true;
         yield return new WaitForSeconds(invincibleTime);
         _isInvincible = false;
     }
 
+    /// <summary>
+    /// ダメージ後、無敵化のフラグをtrue、一定時間後falseにするコルーチンを開始する
+    /// </summary>
     void SetInvincible()
     {
         if(!_isInvincible)
         {
-            StartCoroutine(InitInvincible());
+            StartCoroutine(InvincibleCoroutine());
         }
     }
 }

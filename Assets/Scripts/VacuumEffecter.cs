@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class VacuumEffecter : MonoBehaviour
 {
-    public PlayerInputs playerInputs;
+    public PantsGetter pantsGetter;
     public GameObject vacuumEffectObjPrefab;
     public int effectAmount = 10;
     public AnimationCurve vacuumeEffectAnimationCurve;
@@ -22,7 +22,7 @@ public class VacuumEffecter : MonoBehaviour
 
     void Update()
     {
-        if(vacuumEffects.Count <= 0 && playerInputs.vaccum)
+        if(vacuumEffects.Count <= 0 && pantsGetter.vacuuming)
         {
             Init(effectAmount);
         }
@@ -65,9 +65,9 @@ public class VacuumEffecter : MonoBehaviour
             if ((transform.position - effect.transform.position).sqrMagnitude < 0.2 * 0.2 || (transform.TransformPoint(Vector3.forward) - effect.transform.position).sqrMagnitude >= (transform.TransformPoint(-Vector3.forward) - effect.transform.position).sqrMagnitude)
             {
                 trailRenderer.emitting = false;
-                if (playerInputs.vaccum || playerInputs.hyperVaccum)
+                if (pantsGetter.vacuuming || pantsGetter.hyperVacuuming)
                 {
-                    trailRenderer.widthCurve = playerInputs.vaccum? vacuumeEffectAnimationCurve : hyperVacuumeEffectAnimationCurve;
+                    trailRenderer.widthCurve = pantsGetter.hyperVacuuming ? hyperVacuumeEffectAnimationCurve : vacuumeEffectAnimationCurve;
                     effect.transform.position = transform.TransformPoint((Vector3.forward + Vector3.right * Random.Range(-1f, 1f) + Vector3.up * Random.Range(-0.3f, 0.3f)) * 3 * Random.Range(0.5f, 1f));
                     trailRenderer.Clear();
                     trailRenderer.emitting = true;

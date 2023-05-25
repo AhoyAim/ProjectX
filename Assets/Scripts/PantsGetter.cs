@@ -8,9 +8,11 @@ public class PantsGetter : MonoBehaviour
     public float vaccumableDistance = 2.25f;
     public float vacuumableAngle = 90f;
     public float vacuumReleasPower = 20;
+    public float vacuumFailsInterval = 2f;
     public bool vacuuming = false;
     public bool hyperVacuuming = false;
     public bool vacuumReleasing = false;
+    public bool vacuumingFails = false;
 
     HashSet<GirlController_> vaccumedableGirlControllers = null;
     private void Start()
@@ -57,6 +59,18 @@ public class PantsGetter : MonoBehaviour
         vacuuming = false;
         hyperVacuuming = false;
         vacuumReleasing = false;
+    }
+
+    public void VacuumingFails()
+    {
+        vacuumingFails = true;
+        Idle();
+        Invoke("EndVacuumingFails", vacuumFailsInterval);
+    }
+
+    public void EndVacuumingFails()
+    {
+        vacuumingFails = false;
     }
 
 

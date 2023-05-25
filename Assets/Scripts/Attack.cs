@@ -1,15 +1,23 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class Attack : MonoBehaviour
 {
     public Collider attackTrigger;
     public string targetTagName;
+    public UnityEvent addtionalAttackEvent;
+    
     
 
-    private bool hitFlag = false;//triggerを１度しかヒットさせないためのフラグ
+    private bool hitFlag = false;//triggerを１度しかヒットさせないためのフラグ 要らないかも
 
+
+    private void Start()
+    {
+        Debug.Log(addtionalAttackEvent);
+    }
     private void OnEnable()
     {
         attackTrigger.enabled = true;

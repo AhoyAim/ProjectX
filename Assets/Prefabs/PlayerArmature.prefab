@@ -713,6 +713,9 @@ MonoBehaviour:
   BottomClamp: -30
   CameraAngleOverride: 0
   LockCameraPosition: 0
+  invincibleTime: 5
+  _vacuumTime: 0
+  _vacuumComboCount: 0
 --- !u!114 &1569905056323478976
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2734,7 +2737,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6765065376375100727}
-  - component: {fileID: 6765065376375100721}
   - component: {fileID: 6765065376375100720}
   m_Layer: 8
   m_Name: PantsGetter
@@ -2758,19 +2760,6 @@ Transform:
   m_Father: {fileID: 1438897459247547483}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!65 &6765065376375100721
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6765065376375100726}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 1
-  m_Enabled: 0
-  serializedVersion: 2
-  m_Size: {x: 4.8311396, y: 1.8925188, z: 2.2508209}
-  m_Center: {x: 0, y: 0.44625938, z: 0.62541044}
 --- !u!114 &6765065376375100720
 MonoBehaviour:
   m_ObjectHideFlags: 0

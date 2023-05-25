@@ -23,6 +23,7 @@ public class GirlController_ : MonoBehaviour
         Stan,
         Vacuumed,
         HyperVacuumed,
+        HyperVacuumedCancel,
         BlownAway,
     }
     public State currentState;
@@ -47,6 +48,7 @@ public class GirlController_ : MonoBehaviour
     private int animIDNavmeshAgent;
     private int animIDVacuumed;
     private int animIDHyperVcuuned;
+    private int animIDHyperVcuunedCancel;
     private int animIDBlowAway;
     private int animIDDamaged;
     private int animIDAttack;
@@ -76,6 +78,7 @@ public class GirlController_ : MonoBehaviour
         animIDNavmeshAgent = Animator.StringToHash("NavMeshAgent");
         animIDVacuumed = Animator.StringToHash("Vacuumed");
         animIDHyperVcuuned = Animator.StringToHash("HyperVacuumed");
+        animIDHyperVcuunedCancel = Animator.StringToHash("HyperVacuumedCancel");
         animIDBlowAway = Animator.StringToHash("BlowAway");
         animIDDamaged = Animator.StringToHash("Damaged");
         animIDAttack = Animator.StringToHash("Attack");
@@ -124,6 +127,10 @@ public class GirlController_ : MonoBehaviour
 
             case State.HyperVacuumed:            
                 OnHyperVacuumed();
+                break;
+
+            case State.HyperVacuumedCancel:
+                OnHyperVacuumedCancel();
                 break;
 
             case State.BlownAway:
@@ -181,6 +188,9 @@ public class GirlController_ : MonoBehaviour
                 break;
             case State.HyperVacuumed:
                 animator.SetBool(animIDHyperVcuuned, true);
+                break;
+            case State.HyperVacuumedCancel:
+                animator.SetBool(animIDHyperVcuunedCancel, true);
                 break;
             case State.BlownAway:
                 animator.SetBool(animIDBlowAway, true);
@@ -658,7 +668,13 @@ public class GirlController_ : MonoBehaviour
         girlTransform.LookAt(10 * playerTransform.forward + playerTransform.position);
 
         // 次のステートに遷移できないかチェック
-        if (pantsGetter.vacuumReleasing)
+        if(pantsGetter.vacuumingFails)
+        {
+            //バキュームドキャンセルステートヘ
+            ChangeState(State.HyperVacuumedCancel);
+            rb.velocity = Vector3.zero;
+        }
+        else if (pantsGetter.vacuumReleasing)
         {
             ChangeState(State.BlownAway);
             //BlowAway(playerTransform.forward*20);
@@ -676,8 +692,6 @@ public class GirlController_ : MonoBehaviour
 
         Player_GirlManager.instance.vaccumedableGirlControllers.Remove(this);
         rb.velocity = blowAwayDirection;
-
-        //girlTransform.parent = null;
 
         //　pantsGetterがBlowAway(Vector3 direction)を呼ぶ。
         //　OnCollisionEnterでState.Damagedに遷移
@@ -737,20 +751,6 @@ public class GirlController_ : MonoBehaviour
     }
     void OnStan()
     {
-        //if(_isEnable)
-        //{
-        //    _isEnable = false;
-
-        //TeardownVacuumed();
-
-        //    _isEnable = true;
-
-        //    StartCoroutine(DelayCoroutine(() =>
-        //    {
-        //        currentState = State.Normal;
-        //    }));
-        //}
-
         TeardownVacuumed();
 
         if(!IsChangeableAnimeState("Stan"))
@@ -759,6 +759,14 @@ public class GirlController_ : MonoBehaviour
         }
         ChangeState(State.Normal);
         animator.SetTrigger(animIDNavmeshAgent);
+    }
+
+    void OnHyperVacuumedCancel()
+    {
+        if(animator.GetCurrentAnimatorStateInfo(0).IsName("Normal"))
+        {
+            currentState = State.Normal;
+        }
     }
 
 
