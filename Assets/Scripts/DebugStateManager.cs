@@ -5,38 +5,38 @@ using UnityEngine;
 public class DebugStateManager : MonoBehaviour
 {
    
-    public GirlController_[] girlController_s; 
+    public GirlController[] girlControllers; 
 
     private void Start()
     {
-        girlController_s = FindObjectsOfType<GirlController_>();
+        girlControllers = FindObjectsOfType<GirlController>();
     }
     void Update()
     {
         if(Input.GetKey(KeyCode.F1))
         {
-            ChangeState(GirlController_.State.Normal);
+            ChangeState(GirlController.State.Normal);
         }
         if (Input.GetKey(KeyCode.F2))
         {
-            ChangeState(GirlController_.State.Notice);
+            ChangeState(GirlController.State.Notice);
 
         }
         if (Input.GetKey(KeyCode.F3))
         {
-            ChangeState(GirlController_.State.Runaway); 
+            ChangeState(GirlController.State.Runaway); 
         }
         if (Input.GetKey(KeyCode.F4))
         {
-            ChangeState(GirlController_.State.Approch);
+            ChangeState(GirlController.State.Approch);
         }
         if (Input.GetKey(KeyCode.F5))
         {
-            ChangeState(GirlController_.State.Attack); 
+            ChangeState(GirlController.State.Attack); 
         }
         if (Input.GetKey(KeyCode.F6))
         {
-            ChangeState(GirlController_.State.Damaged); 
+            ChangeState(GirlController.State.Damaged); 
         }
         if (Input.GetKey(KeyCode.F7))
         {
@@ -44,25 +44,25 @@ public class DebugStateManager : MonoBehaviour
         }
         if (Input.GetKey(KeyCode.F8))
         {
-            ChangeState(GirlController_.State.Attack); 
+            ChangeState(GirlController.State.Attack); 
         }
         if (Input.GetKey(KeyCode.F9))
         {
-            ChangeState(GirlController_.State.Vacuumed); 
+            ChangeState(GirlController.State.Vacuumed); 
         }
         if (Input.GetKey(KeyCode.F10))
         {
-            ChangeState(GirlController_.State.HyperVacuumed);
+            ChangeState(GirlController.State.HyperVacuumed);
         }
         if (Input.GetKey(KeyCode.F11))
         {
-            ChangeState(GirlController_.State.BlownAway); 
+            ChangeState(GirlController.State.BlownAway); 
         }
 
     }
-    void ChangeState(GirlController_.State name)
+    void ChangeState(GirlController.State name)
     {
-        foreach(var girl in girlController_s)
+        foreach(var girl in girlControllers)
         {
             girl.currentState = name;
         }

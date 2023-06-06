@@ -115,6 +115,8 @@ public class PlayerContoroller : MonoBehaviour, IDamageable
     private int _animIDJump;
     private int _animIDFreeFall;
     private int _animIDMotionSpeed;
+    private int _animIDDamaged;
+    private int _animIDAttack;
 
 #if ENABLE_INPUT_SYSTEM && STARTER_ASSETS_PACKAGES_CHECKED
     private PlayerInput _playerInput;
@@ -194,19 +196,9 @@ public class PlayerContoroller : MonoBehaviour, IDamageable
 
     private void Update()
     {
-        if(Input.GetKeyDown(KeyCode.Z))
+        if(Input.GetKey(KeyCode.Z))
         {
-            if(!_animator.GetBool("Test"))
-            {
-                _animator.SetLayerWeight(_animator.GetLayerIndex("Pose"), 0);
-                _animator.SetBool("Test", true);
-            }
-            else
-            {
-                _animator.SetLayerWeight(_animator.GetLayerIndex("Pose"), 1);
-                _animator.SetBool("Test", false);
-            }
-            
+            transform.Rotate(new Vector3(0, 720 * Time.deltaTime, 0));
         }
 
 
@@ -253,6 +245,8 @@ public class PlayerContoroller : MonoBehaviour, IDamageable
         _animIDJump = Animator.StringToHash("Jump");
         _animIDFreeFall = Animator.StringToHash("FreeFall");
         _animIDMotionSpeed = Animator.StringToHash("MotionSpeed");
+        _animIDDamaged = Animator.StringToHash("Damaged");
+        _animIDAttack = Animator.StringToHash("Attack");
     }
 
     private void GroundedCheck()
@@ -475,7 +469,35 @@ public class PlayerContoroller : MonoBehaviour, IDamageable
         }
     }
 
-    private IEnumerator ComboChainTimer()
+    public void ChangeState(State state)
+    {
+        currentState = state;
+        switch (currentState)
+        {
+            case State.Normal:
+                break;
+            case State.Vacuum:
+                break;
+            case State.HyperVacuum:
+                break;
+            case State.VacuumRelease:
+                break;
+            case State.Attack:
+                _animator.SetTrigger(_animIDAttack);
+                break;
+            case State.Damaged:
+                break;
+            case State.Stan:
+                break;
+            case State.Dead:
+                break;
+            default:
+                break;
+        }
+
+    }
+
+        private IEnumerator ComboChainTimer()
     {
         yield return new WaitForSeconds(0.4f);
         _vacuumComboCount = 0; 
@@ -516,11 +538,11 @@ public class PlayerContoroller : MonoBehaviour, IDamageable
         {
             _isEnable = false;
             _vacuumComboCount++;
-            if(_vacuumComboCount == 3)
+            if(_vacuumComboCount == _toAttackCount)
             {
                 _vacuumComboCount = 0;
                 _vacuumTime = 0.0f;
-                currentState = State.Attack;
+                ChangeState(State.Attack);
                 return;
             }
 
@@ -532,7 +554,7 @@ public class PlayerContoroller : MonoBehaviour, IDamageable
   
             //pantsGetter.OnVacuum();
         }
-        Debug.Log("VaccumÇæÇÊ");
+        //Debug.Log("VaccumÇæÇÊ");
         pantsGetter.OnVacuum();
 
         if (_vacuumTime >= _toHyperVacuumedTime)
@@ -554,8 +576,8 @@ public class PlayerContoroller : MonoBehaviour, IDamageable
     }
     void OnHyperVcuum()
     {
-        _animator.SetBool("Vacuum", true);
-        Debug.Log("HyperVaccumÇæÇÊ");
+        //_animator.SetBool("Vacuum", true);
+        //Debug.Log("HyperVaccumÇæÇÊ");
         float rotation = Mathf.SmoothDampAngle(transform.eulerAngles.y, CinemachineCameraTarget.transform.eulerAngles.y, ref _rotationVelocity,
                RotationSmoothTime);
         transform.rotation = Quaternion.Euler(0.0f, rotation, 0.0f);
@@ -585,15 +607,17 @@ public class PlayerContoroller : MonoBehaviour, IDamageable
     }
     void OnAttack()
     {
-        Debug.Log("Attack");
-        
-        currentState = State.Normal;
+        if (_animator.GetCurrentAnimatorStateInfo(0).IsName("Normal") && !_animator.IsInTransition(0))
+        {
+            currentState = State.Normal;
+        }
+        //currentState = State.Normal;
     }
 
     void OnDamaged()
     {
         SetInvincible();
-        if (_animator.GetCurrentAnimatorStateInfo(0).IsName("Normal") && !_animator.IsInTransition(0) && !_animator.GetBool("Test"))
+        if (_animator.GetCurrentAnimatorStateInfo(0).IsName("Normal") && !_animator.IsInTransition(0) && !_animator.GetBool(_animIDDamaged))
         {
             currentState = State.Normal;
         }
@@ -621,7 +645,7 @@ public class PlayerContoroller : MonoBehaviour, IDamageable
         pantsGetter.VacuumingFails();
 
         _animator.SetLayerWeight(_animator.GetLayerIndex("Pose"), 0);
-        _animator.SetBool("Test", true);
+        _animator.SetBool(_animIDDamaged, true);
         currentState = State.Damaged;
 
         Vector3 StartValue = transform.position;
@@ -644,7 +668,7 @@ public class PlayerContoroller : MonoBehaviour, IDamageable
             () =>
             {
                 Debug.Log("êÅÇ´îÚÇ—èIÇÌÇËÇ‹ÇµÇΩ");
-                _animator.SetBool("Test", false);
+                _animator.SetBool(_animIDDamaged, false);
             }
         );
 
@@ -666,8 +690,10 @@ public class PlayerContoroller : MonoBehaviour, IDamageable
     IEnumerator InvincibleCoroutine()
     {
         _isInvincible = true;
+        _animator.SetLayerWeight(_animator.GetLayerIndex("Blink"), 1);
         yield return new WaitForSeconds(invincibleTime);
         _isInvincible = false;
+        _animator.SetLayerWeight(_animator.GetLayerIndex("Blink"), 0);
     }
 
     /// <summary>

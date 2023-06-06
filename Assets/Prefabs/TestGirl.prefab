@@ -1474,7 +1474,7 @@ MonoBehaviour:
   bodyTransform: {fileID: 655315374036474559}
   pantsedSkinedMaterial: {fileID: 2100000, guid: fc7d8a2830c05ef48ad7b2a46514bd03,
     type: 2}
-  nakedSkinedMaterial: {fileID: 2100000, guid: 50b31dd502e7baa4ebb294c0a0132f23, type: 2}
+  nakedSkinedMaterial: {fileID: 2100000, guid: 6b95bebb1e4daea43b07b5d39b1832a6, type: 2}
 --- !u!114 &6736026144615727948
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -14,7 +14,7 @@ public class PantsGetter : MonoBehaviour
     public bool vacuumReleasing = false;
     public bool vacuumingFails = false;
 
-    HashSet<GirlController_> vaccumedableGirlControllers = null;
+    HashSet<GirlController> vaccumedableGirlControllers = null;
     private void Start()
     {
         vaccumedableGirlControllers = Player_GirlManager.instance.vaccumedableGirlControllers;
@@ -31,7 +31,7 @@ public class PantsGetter : MonoBehaviour
             if(!girl.isNaked)
             {
                 girl.isNaked = true;
-                girl.mosaic.enabled = true;
+                
                 girl.UpdatePants();
                 pantsCalc.GetPants();
             }
@@ -49,6 +49,10 @@ public class PantsGetter : MonoBehaviour
         vacuumReleasing = true;
         foreach (var girl in vaccumedableGirlControllers)
         {
+            if(girl.currentState == GirlController.State.Damaged)
+            {
+                return;
+            }
             girl.BlowAway(transform.forward * vacuumReleasPower);
             Debug.Log($"{girl}‚ðBlowAway{transform.forward}‚µ‚½");
             // girl.currentState = GirlController_.State.BlownAway;

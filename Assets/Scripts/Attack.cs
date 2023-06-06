@@ -16,7 +16,7 @@ public class Attack : MonoBehaviour
 
     private void Start()
     {
-        Debug.Log(addtionalAttackEvent);
+        //Debug.Log(addtionalAttackEvent);
     }
     private void OnEnable()
     {

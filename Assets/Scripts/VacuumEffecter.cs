@@ -65,7 +65,7 @@ public class VacuumEffecter : MonoBehaviour
             if ((transform.position - effect.transform.position).sqrMagnitude < 0.2 * 0.2 || (transform.TransformPoint(Vector3.forward) - effect.transform.position).sqrMagnitude >= (transform.TransformPoint(-Vector3.forward) - effect.transform.position).sqrMagnitude)
             {
                 trailRenderer.emitting = false;
-                if (pantsGetter.vacuuming || pantsGetter.hyperVacuuming)
+                if (pantsGetter.vacuuming || pantsGetter.hyperVacuuming )
                 {
                     trailRenderer.widthCurve = pantsGetter.hyperVacuuming ? hyperVacuumeEffectAnimationCurve : vacuumeEffectAnimationCurve;
                     effect.transform.position = transform.TransformPoint((Vector3.forward + Vector3.right * Random.Range(-1f, 1f) + Vector3.up * Random.Range(-0.3f, 0.3f)) * 3 * Random.Range(0.5f, 1f));

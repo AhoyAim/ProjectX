@@ -9,7 +9,7 @@ public class PantsStorage : MonoBehaviour
 
     private void Start()
     {
-        goalPantsCount = FindObjectsOfType<GirlController_>().Length;
+        goalPantsCount = FindObjectsOfType<GirlController>().Length;
     }
     private void OnTriggerEnter(Collider other)
     {

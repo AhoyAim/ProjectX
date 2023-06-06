@@ -6,7 +6,7 @@ public class Player_GirlManager : MonoBehaviour
 {
     public static Player_GirlManager instance;
 
-    public HashSet<GirlController_> vaccumedableGirlControllers;
+    public HashSet<GirlController> vaccumedableGirlControllers;
     void Awake()
     {
         instance = this;

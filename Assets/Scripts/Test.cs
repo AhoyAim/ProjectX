@@ -4,13 +4,12 @@ using UnityEngine;
 
 public class Test : MonoBehaviour
 {
-    private void OnTriggerEnter(Collider other)
+
+    private void Update()
     {
-        if(other.CompareTag("Player"))
-        {
-          
-        }
+        //Debug.Log(Mathf.Atan2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical")) * Mathf.Rad2Deg);
+        Debug.Log(Mathf.Atan2(Input.GetAxis("Vertical"), Input.GetAxis("Horizontal")) * Mathf.Rad2Deg);
     }
-   
+
 
 }
