@@ -50,6 +50,7 @@ public class GirlController : MonoBehaviour, IDamageable
     private NavMeshAgent navMeshAgent;
     private Animator animator;
     private int animIDSpeed;
+    private int animIDIsNaked;
     private int animIDNavmeshAgent;
     private int animIDVacuumed;
     private int animIDHyperVcuuned;
@@ -81,6 +82,7 @@ public class GirlController : MonoBehaviour, IDamageable
         navMeshAgent = GetComponent<NavMeshAgent>();
         animator = GetComponent<Animator>();
         animIDSpeed = Animator.StringToHash("Speed");
+        animIDIsNaked = Animator.StringToHash("IsNaked");
         animIDNavmeshAgent = Animator.StringToHash("NavMeshAgent");
         animIDVacuumed = Animator.StringToHash("Vacuumed");
         animIDHyperVcuuned = Animator.StringToHash("HyperVacuumed");
@@ -175,6 +177,7 @@ public class GirlController : MonoBehaviour, IDamageable
         {
             case State.Normal:
                 animator.SetBool(animIDNavmeshAgent, true);
+                TeardownVacuumed();
                 break;
             case State.Notice:
                 animator.SetBool(animIDNotice, true);
@@ -461,6 +464,7 @@ public class GirlController : MonoBehaviour, IDamageable
             animator.SetBool(animIDNavmeshAgent, true);
         }
         navMeshAgent.speed = walkSpeed;
+        animator.SetFloat(animIDIsNaked, isNaked ? 1:0);
         animator.SetFloat(animIDSpeed, navMeshAgent.velocity.magnitude, 0.25f, Time.deltaTime);
         if ((Random.Range(0, 5000) < 20))
         {
@@ -518,6 +522,7 @@ public class GirlController : MonoBehaviour, IDamageable
             animator.SetBool(animIDNavmeshAgent, true);
         }
         navMeshAgent.speed = runSpeed;
+        animator.SetFloat(animIDIsNaked, 0);
         animator.SetFloat(animIDSpeed, navMeshAgent.velocity.magnitude, 0.25f, Time.deltaTime);
         if (!isRunaway)
         {
@@ -537,6 +542,7 @@ public class GirlController : MonoBehaviour, IDamageable
             animator.SetBool(animIDNavmeshAgent, true);
         }
         navMeshAgent.speed = runSpeed;
+        animator.SetFloat(animIDIsNaked, 1);
         animator.SetFloat(animIDSpeed, navMeshAgent.velocity.magnitude, 0.25f, Time.deltaTime);
         navMeshAgent.stoppingDistance = approchDistance;
         navMeshAgent.destination = playerTransform.position;
@@ -747,6 +753,7 @@ public class GirlController : MonoBehaviour, IDamageable
 
     void OnHyperVacuumedCancel()
     {
+        TeardownVacuumed();
         if (animator.GetCurrentAnimatorStateInfo(0).IsName("Normal"))
         {
             currentState = State.Normal;
