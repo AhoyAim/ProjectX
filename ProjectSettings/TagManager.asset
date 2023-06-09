@@ -5,6 +5,10 @@ TagManager:
   serializedVersion: 2
   tags:
   - CinemachineTarget
+  - Girl
+  - Pants
+  - Environment
+  - BlownAway
   layers:
   - Default
   - TransparentFX
@@ -16,8 +20,8 @@ TagManager:
   - 
   - Character
   - Ground
-  - 
-  - 
+  - Girl
+  - IgnoreGirl
   - 
   - 
   - 
