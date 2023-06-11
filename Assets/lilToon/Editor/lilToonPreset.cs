@@ -1,6 +1,7 @@
 #if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using lilToon;
 using UnityEditor;
 using UnityEngine;
@@ -20,35 +21,35 @@ public class lilToonPreset : ScriptableObject
     public bool outlineMainTex;
     public int tessellation;
 
-    [System.Serializable]
+    [Serializable]
     public struct lilPresetBase
     {
         public string language;
         public string name;
     }
 
-    [System.Serializable]
+    [Serializable]
     public struct lilPresetColor
     {
         public string name;
         public Color value;
     }
 
-    [System.Serializable]
+    [Serializable]
     public struct lilPresetVector4
     {
         public string name;
         public Vector4 value;
     }
 
-    [System.Serializable]
+    [Serializable]
     public struct lilPresetFloat
     {
         public string name;
         public float value;
     }
 
-    [System.Serializable]
+    [Serializable]
     public struct lilPresetTexture
     {
         public string name;
@@ -61,9 +62,9 @@ public class lilToonPreset : ScriptableObject
     {
         if(material == null || preset == null) return;
         Undo.RecordObject(material, "Apply Preset");
-        for(int i = 0; i < preset.floats.Length; i++)
+        foreach(var f in preset.floats.Where(f => f.name == "_StencilPass"))
         {
-            if(preset.floats[i].name == "_StencilPass") material.SetFloat(preset.floats[i].name, preset.floats[i].value);
+            material.SetFloat(f.name, f.value);
         }
         if(preset.shader != null) material.shader = preset.shader;
         bool isoutl         = preset.outline == -1 ? material.shader.name.Contains("Outline") : (preset.outline == 1);
@@ -78,7 +79,7 @@ public class lilToonPreset : ScriptableObject
         bool isonepass      = material.shader.name.Contains("OnePass");
         bool istwopass      = material.shader.name.Contains("TwoPass");
 
-        RenderingMode           renderingMode = RenderingMode.Opaque;
+        var renderingMode = RenderingMode.Opaque;
 
         //if(string.IsNullOrEmpty(preset.renderingMode) || !Enum.TryParse(preset.renderingMode, out renderingMode))
         if(string.IsNullOrEmpty(preset.renderingMode) || !Enum.IsDefined(typeof(RenderingMode), preset.renderingMode))
@@ -96,21 +97,21 @@ public class lilToonPreset : ScriptableObject
             renderingMode = (RenderingMode)Enum.Parse(typeof(RenderingMode), preset.renderingMode);
         }
 
-        TransparentMode         transparentMode = TransparentMode.Normal;
+        var                     transparentMode = TransparentMode.Normal;
         if(isonepass)           transparentMode = TransparentMode.OnePass;
         if(!isfur && istwopass) transparentMode = TransparentMode.TwoPass;
 
         lilMaterialUtils.SetupMaterialWithRenderingMode(material, renderingMode, transparentMode, isoutl, islite, istess, ismulti);
         if(preset.renderQueue != -2) material.renderQueue = preset.renderQueue;
 
-        for(int i = 0; i < preset.colors.Length;   i++) material.SetColor(preset.colors[i].name, preset.colors[i].value);
-        for(int i = 0; i < preset.vectors.Length;  i++) material.SetVector(preset.vectors[i].name, preset.vectors[i].value);
-        for(int i = 0; i < preset.floats.Length;   i++) material.SetFloat(preset.floats[i].name, preset.floats[i].value);
-        for(int i = 0; i < preset.textures.Length; i++)
+        foreach(var c in preset.colors ) material.SetColor(c.name, c.value);
+        foreach(var v in preset.vectors) material.SetVector(v.name, v.value);
+        foreach(var f in preset.floats ) material.SetFloat(f.name, f.value);
+        foreach(var t in preset.textures)
         {
-            material.SetTexture(preset.textures[i].name, preset.textures[i].value);
-            material.SetTextureOffset(preset.textures[i].name, preset.textures[i].offset);
-            material.SetTextureScale(preset.textures[i].name, preset.textures[i].scale);
+            material.SetTexture(t.name, t.value);
+            material.SetTextureOffset(t.name, t.offset);
+            material.SetTextureScale(t.name, t.scale);
         }
 
         if(preset.outlineMainTex) material.SetTexture("_OutlineTex", material.GetTexture("_MainTex"));
@@ -118,13 +119,7 @@ public class lilToonPreset : ScriptableObject
 
     public static lilToonPreset[] LoadPresets()
     {
-        string[] presetGuid = AssetDatabase.FindAssets("t:lilToonPreset");
-        var presetList = new List<lilToonPreset>();
-        for(int i=0; i<presetGuid.Length; i++)
-        {
-            presetList.Add(AssetDatabase.LoadAssetAtPath<lilToonPreset>(lilDirectoryManager.GUIDToPath(presetGuid[i])));
-        }
-        return presetList.ToArray();
+        return lilDirectoryManager.FindAssets<lilToonPreset>("t:lilToonPreset").ToArray();
     }
 
     //------------------------------------------------------------------------------------------------------------------------------
@@ -254,11 +249,11 @@ public class lilToonPreset : ScriptableObject
                                     GetLoc("sPresetCategoryOther") };
             scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
 
-            Material material = (Material)Selection.activeObject;
+            var material = (Material)Selection.activeObject;
             if(preset == null) preset = CreateInstance<lilToonPreset>();
 
             // load language
-            string[] langName = lilLanguageManager.langSet.languageNames.Split('\t');
+            var langName = lilLanguageManager.langSet.languageNames.Split('\t');
             Array.Resize(ref presetName, langName.Length);
 
             // Initialize
@@ -485,7 +480,9 @@ public class lilToonPreset : ScriptableObject
                 preset.outlineMainTex = shouldSaveMainTex2Outline;
 
                 EditorUtility.SetDirty(preset);
-                string savePath = EditorUtility.SaveFilePanel("Save Preset", lilDirectoryManager.GetPresetsFolderPath(), filename, "asset");
+                string presetFolderPath = lilDirectoryManager.GetPresetsFolderPath();
+                if(presetFolderPath.Contains("Packages")) presetFolderPath = "Assets/";
+                string savePath = EditorUtility.SaveFilePanel("Save Preset", presetFolderPath, filename, "asset");
                 if(!string.IsNullOrEmpty(savePath))
                 {
                     AssetDatabase.CreateAsset(preset, FileUtil.GetProjectRelativePath(savePath));
@@ -542,7 +539,7 @@ public class lilToonPreset : ScriptableObject
                     shouldSaveFurRendering && lilPropertyNameChecker.IsFurRenderingProperty(propName)
                 )) continue;
 
-                ShaderUtil.ShaderPropertyType propType = ShaderUtil.GetPropertyType(material.shader, i);
+                var propType = ShaderUtil.GetPropertyType(material.shader, i);
                 if(propType == ShaderUtil.ShaderPropertyType.Color)
                 {
                     Array.Resize(ref preset.colors, preset.colors.Length + 1);

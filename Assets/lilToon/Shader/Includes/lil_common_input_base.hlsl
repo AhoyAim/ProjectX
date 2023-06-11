@@ -193,10 +193,18 @@ float4  _MainTex_ST;
 #if defined(LIL_FEATURE_DISTANCE_FADE)
     float4  _DistanceFade;
     float4  _DistanceFadeColor;
+    float4  _DistanceFadeRimColor;
+#endif
+
+// Dither
+#if defined(LIL_FEATURE_DITHER)
+    float4  _DitherTex_TexelSize;
 #endif
 
 // AudioLink
 #if defined(LIL_FEATURE_AUDIOLINK)
+    float4  _AudioLinkMask_ST;
+    float4  _AudioLinkMask_ScrollRotate;
     float4  _AudioLinkDefaultValue;
     float4  _AudioLinkUVParams;
     float4  _AudioLinkStart;
@@ -429,6 +437,9 @@ float   _AAStrength;
     float   _GlitterBackfaceMask;
     float   _GlitterScaleRandomize;
 #endif
+#if defined(LIL_FEATURE_DISTANCE_FADE)
+    float   _DistanceFadeRimFresnelPower;
+#endif
 #if defined(LIL_FEATURE_EMISSION_1ST)
     float   _EmissionBlend;
     float   _EmissionParallaxDepth;
@@ -451,12 +462,25 @@ float   _AAStrength;
     float   _Parallax;
     float   _ParallaxOffset;
 #endif
+#if defined(LIL_FEATURE_DITHER)
+    float   _DitherMaxValue;
+#endif
 #if defined(LIL_FEATURE_AUDIOLINK)
     float   _AudioLink2EmissionGrad;
     float   _AudioLink2Emission2ndGrad;
 #endif
 #if defined(LIL_FEATURE_DISSOLVE) &&  defined(LIL_FEATURE_DissolveNoiseMask)
     float   _DissolveNoiseStrength;
+#endif
+#if defined(LIL_FEATURE_IDMASK)
+    float   _IDMask1;
+    float   _IDMask2;
+    float   _IDMask3;
+    float   _IDMask4;
+    float   _IDMask5;
+    float   _IDMask6;
+    float   _IDMask7;
+    float   _IDMask8;
 #endif
 float   _lilShadowCasterBias;
 
@@ -502,6 +526,17 @@ float   _lilShadowCasterBias;
 
 //------------------------------------------------------------------------------------------------------------------------------
 // Int
+#if defined(LIL_FEATURE_IDMASK)
+    int     _IDMaskIndex1;
+    int     _IDMaskIndex2;
+    int     _IDMaskIndex3;
+    int     _IDMaskIndex4;
+    int     _IDMaskIndex5;
+    int     _IDMaskIndex6;
+    int     _IDMaskIndex7;
+    int     _IDMaskIndex8;
+    uint    _IDMaskFrom;
+#endif
 uint    _Cull;
 #if !defined(LIL_FUR) && !defined(LIL_REFRACTION) && !defined(LIL_GEM)
     uint    _OutlineCull;
@@ -511,11 +546,13 @@ uint    _Cull;
 #endif
 #if defined(LIL_FEATURE_MAIN2ND)
     uint    _Main2ndTexBlendMode;
+    uint    _Main2ndTexAlphaMode;
     uint    _Main2ndTex_UVMode;
     uint    _Main2ndTex_Cull;
 #endif
 #if defined(LIL_FEATURE_MAIN3RD)
     uint    _Main3rdTexBlendMode;
+    uint    _Main3rdTexAlphaMode;
     uint    _Main3rdTex_UVMode;
     uint    _Main3rdTex_Cull;
 #endif
@@ -554,9 +591,16 @@ uint    _Cull;
 #endif
 #if defined(LIL_FEATURE_AUDIOLINK)
     uint    _AudioLinkUVMode;
+    uint    _AudioLinkMask_UVMode;
     #if defined(LIL_FEATURE_AUDIOLINK_VERTEX)
         uint    _AudioLinkVertexUVMode;
     #endif
+#endif
+#if defined(LIL_FEATURE_DISTANCE_FADE)
+    uint    _DistanceFadeMode;
+#endif
+#if defined(LIL_FEATURE_DITHER)
+    uint    _UseDither;
 #endif
 #if !defined(LIL_FUR) && !defined(LIL_REFRACTION) && !defined(LIL_GEM)
     uint    _OutlineVertexR2Width;

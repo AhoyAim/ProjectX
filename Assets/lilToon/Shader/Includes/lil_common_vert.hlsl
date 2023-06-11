@@ -63,15 +63,15 @@ LIL_V2F_TYPE vert(appdata input)
 
     //------------------------------------------------------------------------------------------------------------------------------
     // Invisible
-    #if defined(LIL_OUTLINE) && !defined(LIL_LITE) && defined(USING_STEREO_MATRICES)
+    #if defined(LIL_OUTLINE) && !defined(LIL_LITE) && !defined(LIL_PASS_SHADOWCASTER) && defined(USING_STEREO_MATRICES)
         #define LIL_VERTEX_CONDITION (_Invisible || _OutlineDisableInVR)
-    #elif defined(LIL_OUTLINE) && !defined(LIL_LITE)
-        #define LIL_VERTEX_CONDITION (_Invisible || _OutlineDisableInVR && (abs(UNITY_MATRIX_P._m02) > 0.000001))
+    #elif defined(LIL_OUTLINE) && !defined(LIL_LITE) && !defined(LIL_PASS_SHADOWCASTER)
+        #define LIL_VERTEX_CONDITION (_Invisible || _OutlineDisableInVR && (abs(LIL_MATRIX_P._m02) > 0.000001))
     #else
         #define LIL_VERTEX_CONDITION (_Invisible)
     #endif
 
-    #if defined(LIL_TESSELLATION) || defined(LIL_CUSTOM_SAFEVERT)
+    #if !defined(SHADER_STAGE_VERTEX) || defined(LIL_CUSTOM_SAFEVERT)
         if(!LIL_VERTEX_CONDITION)
         {
     #else
@@ -113,7 +113,7 @@ LIL_V2F_TYPE vert(appdata input)
     //------------------------------------------------------------------------------------------------------------------------------
     // Previous Position (for HDRP)
     #if defined(LIL_PASS_MOTIONVECTOR_INCLUDED)
-        input.previousPositionOS = unity_MotionVectorsParams.x > 0.0 ? input.previousPositionOS : input.positionOS.xyz;
+        input.previousPositionOS = lilSelectPreviousPosition(input.previousPositionOS, input.positionOS.xyz);
         #if defined(_ADD_PRECOMPUTED_VELOCITY)
             input.previousPositionOS -= input.precomputedVelocity;
         #endif
@@ -136,18 +136,18 @@ LIL_V2F_TYPE vert(appdata input)
         #else
             lilVertexNormalInputs previousVertexNormalInput = lilGetVertexNormalInputs();
         #endif
-        previousVertexInput.positionWS = TransformPreviousObjectToWorld(input.previousPositionOS);
+        previousVertexInput.positionWS = lilTransformPreviousObjectToWorld(input.previousPositionOS.xyz);
         lilCustomVertexWS(input, uvMain, previousVertexInput, previousVertexNormalInput);
-        LIL_V2F_OUT_BASE.previousPositionCS = mul(UNITY_MATRIX_PREV_VP, float4(previousVertexInput.positionWS, 1.0));
+        LIL_V2F_OUT_BASE.previousPositionCS = mul(LIL_MATRIX_PREV_VP, float4(previousVertexInput.positionWS, 1.0));
 
         #if defined(LIL_ONEPASS_OUTLINE)
             #define LIL_MODIFY_PREVPOS
             #include "lil_vert_outline.hlsl"
             #undef LIL_MODIFY_PREVPOS
             LIL_VERTEX_POSITION_INPUTS(input.previousPositionOS, previousOLVertexInput);
-            previousOLVertexInput.positionWS = TransformPreviousObjectToWorld(input.previousPositionOS);
+            previousOLVertexInput.positionWS = lilTransformPreviousObjectToWorld(input.previousPositionOS.xyz);
             lilCustomVertexWS(input, uvMain, previousOLVertexInput, previousVertexNormalInput);
-            LIL_V2F_OUT.previousPositionCSOL = mul(UNITY_MATRIX_PREV_VP, float4(previousOLVertexInput.positionWS, 1.0));
+            LIL_V2F_OUT.previousPositionCSOL = mul(LIL_MATRIX_PREV_VP, float4(previousOLVertexInput.positionWS, 1.0));
         #endif
     #endif
 
@@ -207,6 +207,12 @@ LIL_V2F_TYPE vert(appdata input)
     #endif
     #if defined(LIL_V2F_POSITION_WS)
         LIL_V2F_OUT_BASE.positionWS     = vertexInput.positionWS;
+    #endif
+    #if defined(LIL_V2F_POSITION_CS_NO_JITTER)
+        LIL_V2F_OUT_BASE.positionCSNoJitter = mul(_NonJitteredViewProjMatrix, float4(vertexInput.positionWS.xyz, 1));
+        #if defined(LIL_V2F_POSITION_CS)
+            lilApplyMotionVectorZBias(LIL_V2F_OUT_BASE.positionCS);
+        #endif
     #endif
 
     // Normal
@@ -335,10 +341,10 @@ LIL_V2F_TYPE vert(appdata input)
     #if defined(SHADERPASS) && SHADERPASS == SHADERPASS_DEPTH_ONLY && defined(LIL_OUTLINE)
         #if defined(UNITY_REVERSED_Z)
             // DirectX
-            LIL_V2F_OUT.positionCS.z -= 0.0001;
+            LIL_V2F_OUT_BASE.positionCS.z -= 0.0001;
         #else
             // OpenGL
-            LIL_V2F_OUT.positionCS.z += 0.0001;
+            LIL_V2F_OUT_BASE.positionCS.z += 0.0001;
         #endif
     #endif
 
@@ -349,10 +355,53 @@ LIL_V2F_TYPE vert(appdata input)
         if(width > -0.000001 && width < 0.000001 && _OutlineDeleteMesh) LIL_V2F_OUT.positionCSOL = 0.0/0.0;
     #elif defined(LIL_OUTLINE)
         float width = lilGetOutlineWidth(uvMain, input.color, _OutlineWidth, _OutlineWidthMask, _OutlineVertexR2Width LIL_SAMP_IN(lil_sampler_linear_repeat));
-        if(width > -0.000001 && width < 0.000001 && _OutlineDeleteMesh) LIL_V2F_OUT.positionCS = 0.0/0.0;
+        if(width > -0.000001 && width < 0.000001 && _OutlineDeleteMesh) LIL_V2F_OUT_BASE.positionCS = 0.0/0.0;
     #endif
 
-    #if defined(LIL_TESSELLATION) || defined(LIL_CUSTOM_SAFEVERT)
+    //------------------------------------------------------------------------------------------------------------------------------
+    // IDMask
+    #if defined(LIL_FEATURE_IDMASK) && !defined(LIL_NOT_SUPPORT_VERTEXID) && !defined(LIL_LITE)
+        int idMaskIndices[8] = {_IDMaskIndex1,_IDMaskIndex2,_IDMaskIndex3,_IDMaskIndex4,_IDMaskIndex5,_IDMaskIndex6,_IDMaskIndex7,_IDMaskIndex8};
+        float idMaskFlags[8] = {_IDMask1,_IDMask2,_IDMask3,_IDMask4,_IDMask5,_IDMask6,_IDMask7,_IDMask8};
+        uint idMaskArg = 0;
+        switch(_IDMaskFrom)
+        {
+            #if defined(LIL_APP_TEXCOORD0)
+                case 0: idMaskArg = input.uv0.x; break;
+            #endif
+            #if defined(LIL_APP_TEXCOORD1)
+                case 1: idMaskArg = input.uv1.x; break;
+            #endif
+            #if defined(LIL_APP_TEXCOORD2)
+                case 2: idMaskArg = input.uv2.x; break;
+            #endif
+            #if defined(LIL_APP_TEXCOORD3)
+                case 3: idMaskArg = input.uv3.x; break;
+            #endif
+            #if defined(LIL_APP_TEXCOORD4)
+                case 4: idMaskArg = input.uv4.x; break;
+            #endif
+            #if defined(LIL_APP_TEXCOORD5)
+                case 5: idMaskArg = input.uv5.x; break;
+            #endif
+            #if defined(LIL_APP_TEXCOORD6)
+                case 6: idMaskArg = input.uv6.x; break;
+            #endif
+            #if defined(LIL_APP_TEXCOORD7)
+                case 7: idMaskArg = input.uv7.x; break;
+            #endif
+            default: idMaskArg = input.vertexID; break;
+        }
+        bool idMasked = IDMask(idMaskArg,idMaskIndices,idMaskFlags);
+        #if defined(LIL_V2F_POSITION_CS)
+            LIL_V2F_OUT_BASE.positionCS = idMasked ? 0.0/0.0 : LIL_V2F_OUT_BASE.positionCS;
+        #endif
+        #if defined(LIL_ONEPASS_OUTLINE)
+            LIL_V2F_OUT.positionCSOL = idMasked ? 0.0/0.0 : LIL_V2F_OUT.positionCSOL;
+        #endif
+    #endif
+
+    #if !defined(SHADER_STAGE_VERTEX) || defined(LIL_CUSTOM_SAFEVERT)
         }
     #endif
 

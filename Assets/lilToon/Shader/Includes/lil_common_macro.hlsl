@@ -191,7 +191,7 @@
 #endif
 
 // normalOS (vertex input)
-#if defined(LIL_SHOULD_TANGENT) || defined(LIL_FEATURE_SHADOW) || defined(LIL_FEATURE_REFLECTION) || defined(LIL_FEATURE_MATCAP) || defined(LIL_FEATURE_MATCAP_2ND) || defined(LIL_FEATURE_RIMLIGHT) || defined(LIL_FEATURE_GLITTER) || defined(LIL_FEATURE_BACKLIGHT) || defined(LIL_FEATURE_AUDIOLINK) || defined(LIL_REFRACTION) || (defined(LIL_USE_LIGHTMAP) && defined(LIL_LIGHTMODE_SUBTRACTIVE)) || defined(LIL_HDRP)
+#if defined(LIL_SHOULD_TANGENT) || defined(LIL_FEATURE_SHADOW) || defined(LIL_FEATURE_REFLECTION) || defined(LIL_FEATURE_MATCAP) || defined(LIL_FEATURE_MATCAP_2ND) || defined(LIL_FEATURE_RIMLIGHT) || defined(LIL_FEATURE_GLITTER) || defined(LIL_FEATURE_BACKLIGHT) || defined(LIL_FEATURE_DISTANCE_FADE) || defined(LIL_FEATURE_AUDIOLINK) || defined(LIL_REFRACTION) || (defined(LIL_USE_LIGHTMAP) && defined(LIL_LIGHTMODE_SUBTRACTIVE)) || defined(LIL_HDRP)
     #define LIL_SHOULD_NORMAL
 #endif
 
@@ -323,6 +323,12 @@
         return tex3D(tex, float3(positionCS*0.25,alpha*0.9375)).a;
     }
 
+    float4 lilSamplePointRepeat(TEXTURE2D(tex), float2 positionCS, float2 size)
+    {
+        uint2 uv = (uint2)positionCS.xy%(uint2)size;
+        return tex2D(tex, uv/size);
+    }
+
     float2 lilGetWidthAndHeight(TEXTURE2D(tex))
     {
         return float2(0, 0);
@@ -395,6 +401,12 @@
         uint3 uv = uint3(positionCS, alpha*0.9375*16);
         uv.xy = uv.xy % 4;
         return tex[uv].a;
+    }
+
+    float4 lilSamplePointRepeat(TEXTURE2D(tex), float2 positionCS, float2 size)
+    {
+        uint2 uv = (uint2)positionCS.xy%(uint2)size;
+        return tex[uv];
     }
 
     float2 lilGetWidthAndHeight(TEXTURE2D(tex))
@@ -1051,12 +1063,47 @@ float3 lilGetObjectPosition()
     #endif
 
     #if LIL_SRP_VERSION_LOWER(7, 1)
-        float3 TransformPreviousObjectToWorld(float3 positionOS)
+        float3 TransformPreviousObjectToWorld(float3 previousPositionOS)
         {
             float4x4 previousModelMatrix = ApplyCameraTranslationToMatrix(unity_MatrixPreviousM);
-            return mul(previousModelMatrix, float4(positionOS, 1.0)).xyz;
+            return mul(previousModelMatrix, float4(previousPositionOS, 1.0)).xyz;
         }
     #endif
+
+    float3 lilSelectPreviousPosition(float3 previousPositionOS, float3 positionOS)
+    {
+        return unity_MotionVectorsParams.x > 0 ? previousPositionOS : positionOS;
+    }
+
+    float3 lilTransformPreviousObjectToWorld(float3 previousPositionOS)
+    {
+        return TransformPreviousObjectToWorld(previousPositionOS);
+    }
+
+    float2 lilCalculateMotionVector(float4 positionCS, float4 previousPositionCS)
+    {
+        if(unity_MotionVectorsParams.y == 0) return float2(2.0, 0.0);
+
+        positionCS.xy = positionCS.xy / LIL_SCREENPARAMS.xy * 2.0 - 1.0;
+        #if UNITY_UV_STARTS_AT_TOP
+            positionCS.y = -positionCS.y;
+        #endif
+        previousPositionCS.xy = previousPositionCS.xy / previousPositionCS.w;
+        float2 motionVec = (positionCS.xy - previousPositionCS.xy);
+
+        float2 microThreshold = 0.01f * _ScreenSize.zw;
+        motionVec.x = abs(motionVec.x) < microThreshold.x ? 0 : motionVec.x;
+        motionVec.y = abs(motionVec.y) < microThreshold.y ? 0 : motionVec.y;
+        motionVec = clamp(motionVec, -1.0f + microThreshold, 1.0f - microThreshold);
+        motionVec *= 0.5;
+
+        #if UNITY_UV_STARTS_AT_TOP
+            motionVec.y = -motionVec.y;
+        #endif
+        return motionVec;
+    }
+
+    #define LIL_MATRIX_PREV_VP UNITY_MATRIX_PREV_VP
 
     #if LIL_SRP_VERSION_LOWER(11, 0)
         #define LIL_HDRP_DEEXPOSURE(col)
@@ -1083,7 +1130,9 @@ float3 lilGetObjectPosition()
     // HDRP Data
     uint lilGetRenderingLayer()
     {
-        #if defined(RENDERING_LIGHT_LAYERS_MASK)
+        #if !defined(DEFAULT_LIGHT_LAYERS)
+            return _EnableLightLayers ? asuint(unity_RenderingLayer.x) & RENDERING_LAYERS_MASK : RENDERING_LAYERS_MASK;
+        #elif defined(RENDERING_LIGHT_LAYERS_MASK)
             return _EnableLightLayers ? (asuint(unity_RenderingLayer.x) & RENDERING_LIGHT_LAYERS_MASK) >> RENDERING_LIGHT_LAYERS_MASK_SHIFT : DEFAULT_LIGHT_LAYERS;
         #else
             return _EnableLightLayers ? asuint(unity_RenderingLayer.x) : DEFAULT_LIGHT_LAYERS;
@@ -1601,6 +1650,69 @@ float3 lilGetObjectPosition()
     #define LIL_HDRP_DEEXPOSURE(col)
     #define LIL_HDRP_INVDEEXPOSURE(col)
 
+    #if LIL_SRP_VERSION_GREATER_EQUAL(16, 0)
+        #define LIL_MATRIX_PREV_VP _PrevViewProjMatrix
+        float3 lilSelectPreviousPosition(float3 previousPositionOS, float3 positionOS)
+        {
+            return unity_MotionVectorsParams.x > 0 ? previousPositionOS : positionOS;
+        }
+
+        float3 lilTransformPreviousObjectToWorld(float3 previousPositionOS)
+        {
+            return mul(UNITY_PREV_MATRIX_M, float4(previousPositionOS,1)).xyz;
+        }
+
+        float2 lilCalculateMotionVector(float4 positionCS, float4 previousPositionCS)
+        {
+            if(unity_MotionVectorsParams.y == 0) return float2(0.0, 0.0);
+
+            positionCS.xy = positionCS.xy / positionCS.w;
+            previousPositionCS.xy = previousPositionCS.xy / previousPositionCS.w;
+
+            #if defined(_FOVEATED_RENDERING_NON_UNIFORM_RASTER)
+                float2 posUV = RemapFoveatedRenderingResolve(positionCS.xy * 0.5 + 0.5);
+                float2 prevPosUV = RemapFoveatedRenderingPrevFrameLinearToNonUniform(previousPositionCS.xy * 0.5 + 0.5);
+                float2 motionVec = posUV - prevPosUV;
+            #else
+                float2 motionVec = (positionCS.xy - previousPositionCS.xy) * 0.5;
+            #endif
+
+            #if UNITY_UV_STARTS_AT_TOP
+                motionVec.y = -motionVec.y;
+            #endif
+            return motionVec;
+        }
+
+        void lilApplyMotionVectorZBias(inout float4 positionCS)
+        {
+            #if defined(UNITY_REVERSED_Z)
+                positionCS.z -= unity_MotionVectorsParams.z * positionCS.w;
+            #else
+                positionCS.z += unity_MotionVectorsParams.z * positionCS.w;
+            #endif
+        }
+    #else
+        #define LIL_MATRIX_PREV_VP LIL_MATRIX_VP
+        float3 lilSelectPreviousPosition(float3 previousPositionOS, float3 positionOS)
+        {
+            return previousPositionOS;
+        }
+
+        float3 lilTransformPreviousObjectToWorld(float3 previousPositionOS)
+        {
+            return 0;
+        }
+
+        float2 lilCalculateMotionVector(float4 positionCS, float4 previousPositionCS)
+        {
+            return 0;
+        }
+
+        void lilMotionVectorOffsetCS(inout float4 positionCS)
+        {
+        }
+    #endif
+
     // Main light
     #if LIL_SRP_VERSION_GREATER_EQUAL(12, 0) && defined(_LIGHT_LAYERS)
         #define LIL_MAINLIGHT_COLOR                         ((_MainLightLayerMask & lilGetRenderingLayer()) != 0 ? _MainLightColor.rgb : 0.0)
@@ -1641,6 +1753,9 @@ float3 lilGetObjectPosition()
     // Shadow caster
     float3 _LightDirection;
     float3 _LightPosition;
+    #if LIL_SRP_VERSION_LOWER(5, 1)
+        float4 _ShadowBias;
+    #endif
     float4 URPShadowPos(float4 positionOS, float3 normalOS, float bias)
     {
         float3 positionWS = TransformObjectToWorld(positionOS.xyz);
@@ -1657,7 +1772,8 @@ float3 lilGetObjectPosition()
         #if LIL_SRP_VERSION_GREATER_EQUAL(5, 1)
             float4 positionCS = TransformWorldToHClip(ApplyShadowBias(positionWS, normalWS, lightDirectionWS));
         #else
-            float4 positionCS = TransformWorldToHClip(positionWS);
+            float biasN = _ShadowBias.y - saturate(dot(lightDirectionWS, normalWS)) * _ShadowBias.y;
+            float4 positionCS = TransformWorldToHClip(positionWS + lightDirectionWS * _ShadowBias.x + normalWS * biasN);
         #endif
 
         #if UNITY_REVERSED_Z
@@ -1938,6 +2054,9 @@ struct lilLightData
 #elif defined(LIL_USE_ADDITIONALLIGHT_MAINDIR_PS)
     #define LIL_APPLY_ADDITIONALLIGHT_TO_MAIN(i,o)
     #define LIL_CORRECT_LIGHTDIRECTION_PS(lightDirection) lightDirection = normalize(lightDirection)
+#elif defined(LIL_URP)
+    #define LIL_APPLY_ADDITIONALLIGHT_TO_MAIN(i,o) o.lightDirection = normalize(o.lightDirection)
+    #define LIL_CORRECT_LIGHTDIRECTION_PS(lightDirection)
 #else
     #define LIL_APPLY_ADDITIONALLIGHT_TO_MAIN(i,o)
     #define LIL_CORRECT_LIGHTDIRECTION_PS(lightDirection)
@@ -2152,13 +2271,22 @@ struct lilLightData
 #endif
 
 // Fragment Macro
-#define LIL_GET_LIGHTING_DATA(input,fd) \
-    LIL_GET_MAINLIGHT(input, fd.lightColor, fd.L, fd.attenuation); \
-    LIL_GET_ADDITIONALLIGHT(input, fd.addLightColor); \
-    fd.invLighting = saturate((1.0 - fd.lightColor) * sqrt(fd.lightColor))
+#if defined(LIL_HDRP)
+    #define LIL_GET_LIGHTING_DATA(input,fd) \
+        LIL_GET_MAINLIGHT(input, fd.lightColor, fd.L, fd.attenuation); \
+        fd.origL = fd.L; \
+        LIL_GET_ADDITIONALLIGHT(input, fd.addLightColor); \
+        fd.invLighting = saturate((1.0 - fd.lightColor) * sqrt(fd.lightColor))
+#else
+    #define LIL_GET_LIGHTING_DATA(input,fd) \
+        LIL_GET_MAINLIGHT(input, fd.lightColor, fd.L, fd.attenuation); \
+        LIL_GET_ADDITIONALLIGHT(input, fd.addLightColor); \
+        fd.invLighting = saturate((1.0 - fd.lightColor) * sqrt(fd.lightColor))
+#endif
 
 #define LIL_GET_POSITION_WS_DATA(input,fd) \
     fd.depth = length(lilHeadDirection(fd.positionWS)); \
+    fd.depthObject = length(lilHeadDirection(lilTransformOStoWS(float3(0,0,0)))); \
     fd.V = normalize(lilViewDirection(fd.positionWS)); \
     fd.headV = normalize(lilHeadDirection(fd.positionWS)); \
     fd.vl = dot(fd.V, fd.L); \

@@ -56,7 +56,7 @@ v2g vert(appdata input)
     //------------------------------------------------------------------------------------------------------------------------------
     // Previous Position (for HDRP)
     #if defined(LIL_PASS_MOTIONVECTOR_INCLUDED)
-        input.previousPositionOS = unity_MotionVectorsParams.x > 0.0 ? input.previousPositionOS : input.positionOS.xyz;
+        input.previousPositionOS = lilSelectPreviousPosition(input.previousPositionOS, input.positionOS.xyz);
         #if defined(_ADD_PRECOMPUTED_VELOCITY)
             input.previousPositionOS -= input.precomputedVelocity;
         #endif
@@ -75,7 +75,7 @@ v2g vert(appdata input)
         #else
             lilVertexNormalInputs previousVertexNormalInput = lilGetVertexNormalInputs();
         #endif
-        previousVertexInput.positionWS = TransformPreviousObjectToWorld(input.previousPositionOS);
+        previousVertexInput.positionWS = lilTransformPreviousObjectToWorld(input.previousPositionOS);
         lilCustomVertexWS(input, uvMain, previousVertexInput, previousVertexNormalInput);
         output.previousPositionWS = previousVertexInput.positionWS;
     #endif
@@ -185,6 +185,46 @@ v2g vert(appdata input)
         #endif
     #endif
 
+    //------------------------------------------------------------------------------------------------------------------------------
+    // IDMask
+    #if defined(LIL_FEATURE_IDMASK) && !defined(LIL_NOT_SUPPORT_VERTEXID)
+        int idMaskIndices[8] = {_IDMaskIndex1,_IDMaskIndex2,_IDMaskIndex3,_IDMaskIndex4,_IDMaskIndex5,_IDMaskIndex6,_IDMaskIndex7,_IDMaskIndex8};
+        float idMaskFlags[8] = {_IDMask1,_IDMask2,_IDMask3,_IDMask4,_IDMask5,_IDMask6,_IDMask7,_IDMask8};
+        uint idMaskArg = 0;
+        switch(_IDMaskFrom)
+        {
+            #if defined(LIL_APP_TEXCOORD0)
+                case 0: idMaskArg = input.uv0.x; break;
+            #endif
+            #if defined(LIL_APP_TEXCOORD1)
+                case 1: idMaskArg = input.uv1.x; break;
+            #endif
+            #if defined(LIL_APP_TEXCOORD2)
+                case 2: idMaskArg = input.uv2.x; break;
+            #endif
+            #if defined(LIL_APP_TEXCOORD3)
+                case 3: idMaskArg = input.uv3.x; break;
+            #endif
+            #if defined(LIL_APP_TEXCOORD4)
+                case 4: idMaskArg = input.uv4.x; break;
+            #endif
+            #if defined(LIL_APP_TEXCOORD5)
+                case 5: idMaskArg = input.uv5.x; break;
+            #endif
+            #if defined(LIL_APP_TEXCOORD6)
+                case 6: idMaskArg = input.uv6.x; break;
+            #endif
+            #if defined(LIL_APP_TEXCOORD7)
+                case 7: idMaskArg = input.uv7.x; break;
+            #endif
+            default: idMaskArg = input.vertexID; break;
+        }
+        bool idMasked = IDMask(idMaskArg,idMaskIndices,idMaskFlags);
+        #if defined(LIL_V2G_POSITION_WS)
+            output.positionWS = idMasked ? 0.0/0.0 : output.positionWS;
+        #endif
+    #endif
+
     return output;
 }
 
@@ -235,7 +275,7 @@ void AppendFur(inout TriangleStream<v2f> outStream, inout v2f output, v2g input[
     #endif
     #if defined(LIL_PASS_MOTIONVECTOR_INCLUDED)
         float3 previousPositionWS = lilLerp3(input[0].previousPositionWS, input[1].previousPositionWS, input[2].previousPositionWS, factor);
-        output.previousPositionCS = mul(UNITY_MATRIX_PREV_VP, float4(previousPositionWS, 1.0));
+        output.previousPositionCS = mul(LIL_MATRIX_PREV_VP, float4(previousPositionWS, 1.0));
     #endif
     #if defined(LIL_V2F_FURLAYER)
         output.furLayer = 0;
@@ -279,7 +319,7 @@ void AppendFur(inout TriangleStream<v2f> outStream, inout v2f output, v2g input[
     #endif
     #if defined(LIL_PASS_MOTIONVECTOR_INCLUDED)
         previousPositionWS.xyz += mixVector;
-        output.previousPositionCS = mul(UNITY_MATRIX_PREV_VP, float4(previousPositionWS, 1.0));
+        output.previousPositionCS = mul(LIL_MATRIX_PREV_VP, float4(previousPositionWS, 1.0));
     #endif
     #if defined(LIL_V2F_FURLAYER)
         output.furLayer = 1;
@@ -347,7 +387,7 @@ void geom(triangle v2g input[3], inout TriangleStream<v2f> outStream)
                 outputBase[i].positionCS = lilTransformWStoCS(input[i].positionWS);
             #endif
             #if defined(LIL_PASS_MOTIONVECTOR_INCLUDED)
-                outputBase[i].previousPositionCS = mul(UNITY_MATRIX_PREV_VP, float4(input[i].previousPositionWS, 1.0));
+                outputBase[i].previousPositionCS = mul(LIL_MATRIX_PREV_VP, float4(input[i].previousPositionWS, 1.0));
             #endif
             #if defined(LIL_V2F_TEXCOORD0)
                 outputBase[i].uv0 = input[i].uv0;

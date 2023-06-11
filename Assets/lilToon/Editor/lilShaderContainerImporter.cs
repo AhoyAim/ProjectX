@@ -7,14 +7,16 @@ using UnityEngine;
 using UnityEditor;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using System.Linq;
 #if UNITY_2020_2_OR_NEWER
-    using UnityEditor.AssetImporters;
+using UnityEditor.AssetImporters;
 #else
     using UnityEditor.Experimental.AssetImporters;
 #endif
 
 namespace lilToon
 {
+    #if LILTOON_DISABLE_ASSET_MODIFICATION == false
     #if UNITY_2019_4_OR_NEWER
         [ScriptedImporter(0, "lilcontainer")]
         public class lilShaderContainerImporter : ScriptedImporter
@@ -22,9 +24,9 @@ namespace lilToon
             public override void OnImportAsset(AssetImportContext ctx)
             {
                 #if UNITY_2019_4_0 || UNITY_2019_4_1 || UNITY_2019_4_2 || UNITY_2019_4_3 || UNITY_2019_4_4 || UNITY_2019_4_5 || UNITY_2019_4_6 || UNITY_2019_4_7 || UNITY_2019_4_8 || UNITY_2019_4_9 || UNITY_2019_4_10
-                    Shader shader = ShaderUtil.CreateShaderAsset(lilShaderContainer.UnpackContainer(ctx.assetPath, ctx), false);
+                    var shader = ShaderUtil.CreateShaderAsset(lilShaderContainer.UnpackContainer(ctx.assetPath, ctx), false);
                 #else
-                    Shader shader = ShaderUtil.CreateShaderAsset(ctx, lilShaderContainer.UnpackContainer(ctx.assetPath, ctx), false);
+                    var shader = ShaderUtil.CreateShaderAsset(ctx, lilShaderContainer.UnpackContainer(ctx.assetPath, ctx), false);
                 #endif
 
                 ctx.AddObjectToAsset("main obj", shader);
@@ -53,21 +55,20 @@ namespace lilToon
         {
             private static void OnPostprocessAllAssets(string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths)
             {
-                foreach(string path in importedAssets)
+                foreach(var path in importedAssets.Where(p => p.EndsWith("lilcontainer", StringComparison.InvariantCultureIgnoreCase)))
                 {
-                    if(!path.EndsWith("lilcontainer", StringComparison.InvariantCultureIgnoreCase)) continue;
-
                     var mainobj = AssetDatabase.LoadMainAssetAtPath(path);
                     if(mainobj is Shader) ShaderUtil.RegisterShader((Shader)mainobj);
 
-                    foreach(var obj in AssetDatabase.LoadAllAssetRepresentationsAtPath(path))
+                    foreach(var obj in AssetDatabase.LoadAllAssetRepresentationsAtPath(path).Where(o => o is Shader))
                     {
-                        if(obj is Shader) ShaderUtil.RegisterShader((Shader)obj);
+                        ShaderUtil.RegisterShader((Shader)obj);
                     }
                 }
             }
         }
     #endif
+    #endif //LILTOON_DISABLE_ASSET_MODIFICATION
 
     public class lilShaderContainer
     {
@@ -102,6 +103,7 @@ namespace lilToon
         private const string LIL_SUBSHADER_INSERT           = "*LIL_SUBSHADER_INSERT*";
         private const string LIL_SUBSHADER_INSERT_POST      = "*LIL_SUBSHADER_INSERT_POST*";
         private const string LIL_SHADER_SETTING             = "*LIL_SHADER_SETTING*";
+        private const string LIL_SRP_VERSION                = "*LIL_SRP_VERSION*";
         private const string LIL_PASS_SHADER_NAME           = "*LIL_PASS_SHADER_NAME*";
         private const string LIL_SUBSHADER_TAGS             = "*LIL_SUBSHADER_TAGS*";
         private const string LIL_DOTS_SM_TAGS               = "*LIL_DOTS_SM_TAGS*";
@@ -229,15 +231,6 @@ namespace lilToon
                     break;
             }
 
-            if(version.RP != lilRenderPipeline.BRP && version.Major > 0)
-            {
-                shaderSettingText +=
-                    Environment.NewLine +
-                    "            #define LIL_SRP_VERSION_MAJOR " + version.Major + Environment.NewLine +
-                    "            #define LIL_SRP_VERSION_MINOR " + version.Minor + Environment.NewLine +
-                    "            #define LIL_SRP_VERSION_PATCH " + version.Patch + Environment.NewLine;
-            }
-
             ReadDataFile(ctx);
             ReplaceMultiCompiles(ref insertPassPre, version, indent, false);
             ReplaceMultiCompiles(ref insertPassPost, version, indent, false);
@@ -252,6 +245,19 @@ namespace lilToon
             sb.Replace(LIL_SUBSHADER_INSERT,        insertText);
             sb.Replace(LIL_SUBSHADER_INSERT_POST,   insertPostText);
             sb.Replace(LIL_SHADER_SETTING,          shaderSettingText);
+            if(version.RP != lilRenderPipeline.BRP && version.Major > 0)
+            {
+                sb.Replace(
+                    LIL_SRP_VERSION,
+                    "#define LIL_SRP_VERSION_MAJOR " + version.Major + Environment.NewLine +
+                    "            #define LIL_SRP_VERSION_MINOR " + version.Minor + Environment.NewLine +
+                    "            #define LIL_SRP_VERSION_PATCH " + version.Patch + Environment.NewLine
+                );
+            }
+            else
+            {
+                sb.Replace(LIL_SRP_VERSION, "");
+            }
             sb.Replace(LIL_PASS_SHADER_NAME,        passShaderName);
             sb.Replace(LIL_SUBSHADER_TAGS,          subShaderTags);
 
@@ -357,7 +363,7 @@ namespace lilToon
                 );
             }
 
-            foreach(KeyValuePair<string,string> replace in replaces)
+            foreach(var replace in replaces)
             {
                 sb.Replace(FixNewlineCode(replace.Key), FixNewlineCode(replace.Value));
             }
@@ -402,6 +408,10 @@ namespace lilToon
                 sb.Replace("/SHADOW_CASTER_OUTLINE", "/SHADOW_CASTER");
             }
 
+            #if !UNITY_2019_4_OR_NEWER
+                sb.Replace("shader_feature_local", "shader_feature");
+            #endif
+
             sb.Replace("\r\n", "\r");
             sb.Replace("\n", "\r");
             sb.Replace("\r", "\r\n");
@@ -431,7 +441,7 @@ namespace lilToon
                 return;
             }
             AddDependency(ctx, path);
-            StreamReader sr = new StreamReader(path);
+            var sr = new StreamReader(path);
             string line;
             while((line = sr.ReadLine()) != null)
             {
@@ -577,8 +587,8 @@ namespace lilToon
 
         private static StringBuilder ReadContainerFile(string path, string rpname, AssetImportContext ctx, bool doOptimize)
         {
-            StringBuilder sb = new StringBuilder();
-            StreamReader sr = new StreamReader(path);
+            var sb = new StringBuilder();
+            var sr = new StreamReader(path);
             string line;
 
             while((line = sr.ReadLine()) != null)
@@ -676,8 +686,8 @@ namespace lilToon
 
             if(rpname == "URP" && !subpath.Contains("UsePass"))
             {
-                StringBuilder sb1 = new StringBuilder(ReadTextFile(subpath));
-                StringBuilder sb2 = new StringBuilder(sb1.ToString());
+                var sb1 = new StringBuilder(ReadTextFile(subpath));
+                var sb2 = new StringBuilder(sb1.ToString());
 
                 sb1.Replace(LIL_DOTS_SM_TAGS, " \"ShaderModel\" = \"4.5\"");
                 //sb1.Replace(LIL_DOTS_SM_4_5, "#pragma target 4.5" + Environment.NewLine + "            #pragma exclude_renderers gles gles3 glcore");
@@ -810,7 +820,7 @@ namespace lilToon
 
         private static string ReadTextFile(string path)
         {
-            StreamReader sr = new StreamReader(path);
+            var sr = new StreamReader(path);
             string text = sr.ReadToEnd();
             sr.Close();
             return text;
@@ -825,23 +835,22 @@ namespace lilToon
         {
             #if UNITY_2019_4_0 || UNITY_2019_4_1 || UNITY_2019_4_2 || UNITY_2019_4_3 || UNITY_2019_4_4 || UNITY_2019_4_5 || UNITY_2019_4_6 || UNITY_2019_4_7 || UNITY_2019_4_8 || UNITY_2019_4_9 || UNITY_2019_4_10
                 string additionalPath = assetFolderPath.Replace("\\", "/");
-                char[] escapes = Environment.NewLine.ToCharArray();
-                string[] text = sb.ToString().Split(escapes[0]);
+                var escapes = Environment.NewLine.ToCharArray();
+                var text = sb.ToString().Split(escapes[0]);
                 sb.Clear();
 
                 if(escapes.Length >= 1)
                 {
-                    foreach(char escape in escapes)
+                    foreach(var escape in escapes)
                     {
-                        string escapeStr = escape.ToString();
                         for(int i = 0; i < text.Length; i++)
                         {
-                            text[i] = text[i].Replace(escapeStr, "");
+                            text[i] = text[i].Replace(escape.ToString(), "");
                         }
                     }
                 }
 
-                foreach(string line in text)
+                foreach(var line in text)
                 {
                     if(line.Contains("#include \"") && !line.Contains("\"Assets/") && !line.Contains("\"Packages/"))
                     {
@@ -859,10 +868,8 @@ namespace lilToon
         {
             if(ctx == null) return;
 
-            foreach(string guid in AssetDatabase.FindAssets("", new[]{assetFolderPath}))
+            foreach(var assetpath in lilDirectoryManager.FindAssetsPath("", new[]{assetFolderPath}).Where(p => !p.Contains("lilcontainer")))
             {
-                string assetpath = AssetDatabase.GUIDToAssetPath(guid);
-                if(assetpath.Contains("lilcontainer")) continue;
                 AddDependency(ctx, assetpath);
             }
         }
@@ -882,8 +889,8 @@ namespace lilToon
 
         private static string GetRelativePath(string fromPath, string toPath)
         {
-            Uri fromUri = new Uri(Path.GetFullPath(fromPath));
-            Uri toUri = new Uri(Path.GetFullPath(toPath));
+            var fromUri = new Uri(Path.GetFullPath(fromPath));
+            var toUri = new Uri(Path.GetFullPath(toPath));
 
             string relativePath = Uri.UnescapeDataString(fromUri.MakeRelativeUri(toUri).ToString());
             relativePath = relativePath.Replace(Path.AltDirectorySeparatorChar, '/');
@@ -935,7 +942,7 @@ namespace lilToon
                     "        */" + Environment.NewLine + "        // ForwardAdd End");
             }
 
-            string[] lines = sb.ToString().Split('\n');
+            var lines = sb.ToString().Split('\n');
             sb = new StringBuilder();
             for(int i = 0; i < lines.Length; i++)
             {
@@ -1020,6 +1027,31 @@ namespace lilToon
             }
             else if(version.RP == lilRenderPipeline.URP)
             {
+                if(version.Major >= 16)
+                {
+                    return GenerateIndentText(indent,
+                        "#pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN",
+                        "#pragma multi_compile _ _ADDITIONAL_LIGHTS_VERTEX _ADDITIONAL_LIGHTS",
+                        // Always calculate in vertex shader
+                        //"#pragma multi_compile _ EVALUATE_SH_MIXED EVALUATE_SH_VERTEX",
+                        "#pragma multi_compile_fragment _ _ADDITIONAL_LIGHT_SHADOWS",
+                        "#pragma multi_compile_fragment _ _REFLECTION_PROBE_BLENDING",
+                        "#pragma multi_compile_fragment _ _REFLECTION_PROBE_BOX_PROJECTION",
+                        "#pragma multi_compile_fragment _ _SHADOWS_SOFT",
+                        "#pragma multi_compile_fragment _ _SCREEN_SPACE_OCCLUSION",
+                        "#pragma multi_compile_fragment _ _DBUFFER_MRT1 _DBUFFER_MRT2 _DBUFFER_MRT3",
+                        "#pragma multi_compile _ _LIGHT_LAYERS",
+                        "#pragma multi_compile_fragment _ _LIGHT_COOKIES",
+                        "#pragma multi_compile _ _FORWARD_PLUS",
+                        "#pragma multi_compile _ LIGHTMAP_SHADOW_MIXING",
+                        "#pragma multi_compile _ SHADOWS_SHADOWMASK",
+                        "#pragma multi_compile _ DIRLIGHTMAP_COMBINED",
+                        "#pragma multi_compile _ LIGHTMAP_ON",
+                        "#pragma multi_compile _ DYNAMICLIGHTMAP_ON",
+                        "#pragma multi_compile_vertex _ FOG_LINEAR FOG_EXP FOG_EXP2",
+                        "#pragma multi_compile_instancing",
+                        "#define LIL_PASS_FORWARD");
+                }
                 if(version.Major >= 14)
                 {
                     return GenerateIndentText(indent,
@@ -1329,9 +1361,18 @@ namespace lilToon
             }
             else if(version.RP == lilRenderPipeline.URP)
             {
-                return GenerateIndentText(indent,
-                    "#pragma multi_compile_instancing",
-                    "#define LIL_PASS_MOTIONVECTORS");
+                if(version.Major >= 16)
+                {
+                    return GenerateIndentText(indent,
+                        "#pragma multi_compile_instancing",
+                        "#define LIL_PASS_MOTIONVECTORS");
+                }
+                else
+                {
+                    return GenerateIndentText(indent,
+                        "#pragma multi_compile_instancing",
+                        "#define LIL_PASS_MOTIONVECTORS");
+                }
             }
             else if(version.RP == lilRenderPipeline.HDRP)
             {
@@ -1535,8 +1576,7 @@ namespace lilToon
         // Avoid Errors
         public static string BuildShaderSettingString(bool isFile, ref bool useBaseShadow, ref bool useOutlineShadow)
         {
-            Type type = typeof(lilToonSetting);
-            var methods = type.GetMethods(BindingFlags.Static | BindingFlags.Public);
+            var methods = typeof(lilToonSetting).GetMethods(BindingFlags.Static | BindingFlags.Public);
             foreach(var method in methods)
             {
                 var methodParams = method.GetParameters();
@@ -1564,8 +1604,7 @@ namespace lilToon
 
         private static object GetFieldValue(string name)
         {
-            Type type = typeof(lilToonSetting);
-            var field = type.GetField(name);
+            var field = typeof(lilToonSetting).GetField(name);
             if(field == null) return null;
 
             lilToonSetting shaderSetting = InitSetting();
@@ -1576,8 +1615,7 @@ namespace lilToon
 
         private static lilToonSetting InitSetting()
         {
-            Type type = typeof(lilToonSetting);
-            var method = type.GetMethod("InitializeShaderSetting", BindingFlags.Static | BindingFlags.NonPublic);
+            var method = typeof(lilToonSetting).GetMethod("InitializeShaderSetting", BindingFlags.Static | BindingFlags.NonPublic);
             if(method == null) return null;
 
             lilToonSetting shaderSetting = null;

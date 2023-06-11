@@ -29,6 +29,7 @@ namespace lilToon
         TwoPass
     }
 
+    [System.Obsolete]
     public enum BlendMode
     {
         Alpha,
@@ -75,6 +76,7 @@ namespace lilToon
         DistanceFade,
         AudioLink,
         Dissolve,
+        IDMask,
         Refraction,
         Fur,
         Encryption,

@@ -65,21 +65,27 @@ namespace lilToon
 
         private static PackageVersionInfos GetURPVersion()
         {
-            PackageVersionInfos version = ReadVersion("30648b8d550465f4bb77f1e1afd0b37d");
+            string path = AssetDatabase.GUIDToAssetPath("30648b8d550465f4bb77f1e1afd0b37d");
+            var package = JsonUtility.FromJson<PackageInfos>(File.ReadAllText(path));
+            string guid =
+                package.displayName.Contains("SLZ") ?
+                "753d1ac2429a21a44ac5f937cbbb409f" : // Core
+                "30648b8d550465f4bb77f1e1afd0b37d";  // URP
+            var version = ReadVersion(guid);
             version.RP = lilRenderPipeline.URP;
             return version;
         }
 
         private static PackageVersionInfos GetLWRPVersion()
         {
-            PackageVersionInfos version = ReadVersion("30648b8d550465f4bb77f1e1afd0b37d");
+            var version = ReadVersion("30648b8d550465f4bb77f1e1afd0b37d");
             version.RP = lilRenderPipeline.LWRP;
             return version;
         }
 
         private static PackageVersionInfos GetHDRPVersion()
         {
-            PackageVersionInfos version = ReadVersion("6f54db4299717fc4ca37866c6afa0905");
+            var version = ReadVersion("6f54db4299717fc4ca37866c6afa0905");
             version.RP = lilRenderPipeline.HDRP;
             return version;
         }
@@ -90,7 +96,7 @@ namespace lilToon
             string path = AssetDatabase.GUIDToAssetPath(guid);
             if(!string.IsNullOrEmpty(path))
             {
-                PackageInfos package = JsonUtility.FromJson<PackageInfos>(File.ReadAllText(path));
+                var package = JsonUtility.FromJson<PackageInfos>(File.ReadAllText(path));
                 version = package.version;
             }
 
@@ -104,16 +110,17 @@ namespace lilToon
             }
             else
             {
-                string[] parts = version.Split('.');
-                infos.Major = int.Parse(parts[0]);
-                infos.Minor = int.Parse(parts[1]);
-                infos.Patch = int.Parse(parts[2].Replace("-preview", ""));
+                var parser = new SemVerParser(version);
+                infos.Major = parser.major;
+                infos.Minor = parser.minor;
+                infos.Patch = parser.patch;
             }
             return infos;
         }
 
         private class PackageInfos
         {
+            public string displayName = "";
             public string version = "";
         }
     }

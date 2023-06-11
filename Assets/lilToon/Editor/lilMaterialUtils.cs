@@ -1,7 +1,15 @@
+#if !LILTOON_VRCSDK3_AVATARS && !LILTOON_VRCSDK3_WORLDS && VRC_SDK_VRCSDK3
+    #if UDON
+        #define LILTOON_VRCSDK3_WORLDS
+    #else
+        #define LILTOON_VRCSDK3_AVATARS
+    #endif
+#endif
 #if UNITY_EDITOR
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace lilToon
 {
@@ -274,14 +282,14 @@ namespace lilToon
             material.SetInt("_ColorMask", 15);
             material.SetInt("_SrcBlendAlpha", (int)UnityEngine.Rendering.BlendMode.One);
             material.SetInt("_DstBlendAlpha", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
-            material.SetInt("_BlendOp", (int)UnityEngine.Rendering.BlendOp.Add);
-            material.SetInt("_BlendOpAlpha", (int)UnityEngine.Rendering.BlendOp.Add);
+            material.SetInt("_BlendOp", (int)BlendOp.Add);
+            material.SetInt("_BlendOpAlpha", (int)BlendOp.Add);
             material.SetInt("_SrcBlendFA", (int)UnityEngine.Rendering.BlendMode.One);
             material.SetInt("_DstBlendFA", (int)UnityEngine.Rendering.BlendMode.One);
             material.SetInt("_SrcBlendAlphaFA", (int)UnityEngine.Rendering.BlendMode.Zero);
             material.SetInt("_DstBlendAlphaFA", (int)UnityEngine.Rendering.BlendMode.One);
-            material.SetInt("_BlendOpFA", (int)UnityEngine.Rendering.BlendOp.Max);
-            material.SetInt("_BlendOpAlphaFA", (int)UnityEngine.Rendering.BlendOp.Max);
+            material.SetInt("_BlendOpFA", (int)BlendOp.Max);
+            material.SetInt("_BlendOpAlphaFA", (int)BlendOp.Max);
             if(isoutl)
             {
                 material.SetInt("_OutlineCull", 1);
@@ -292,14 +300,14 @@ namespace lilToon
                 material.SetInt("_OutlineColorMask", 15);
                 material.SetInt("_OutlineSrcBlendAlpha", (int)UnityEngine.Rendering.BlendMode.One);
                 material.SetInt("_OutlineDstBlendAlpha", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
-                material.SetInt("_OutlineBlendOp", (int)UnityEngine.Rendering.BlendOp.Add);
-                material.SetInt("_OutlineBlendOpAlpha", (int)UnityEngine.Rendering.BlendOp.Add);
+                material.SetInt("_OutlineBlendOp", (int)BlendOp.Add);
+                material.SetInt("_OutlineBlendOpAlpha", (int)BlendOp.Add);
                 material.SetInt("_OutlineSrcBlendFA", (int)UnityEngine.Rendering.BlendMode.One);
                 material.SetInt("_OutlineDstBlendFA", (int)UnityEngine.Rendering.BlendMode.One);
                 material.SetInt("_OutlineSrcBlendAlphaFA", (int)UnityEngine.Rendering.BlendMode.Zero);
                 material.SetInt("_OutlineDstBlendAlphaFA", (int)UnityEngine.Rendering.BlendMode.One);
-                material.SetInt("_OutlineBlendOpFA", (int)UnityEngine.Rendering.BlendOp.Max);
-                material.SetInt("_OutlineBlendOpAlphaFA", (int)UnityEngine.Rendering.BlendOp.Max);
+                material.SetInt("_OutlineBlendOpFA", (int)BlendOp.Max);
+                material.SetInt("_OutlineBlendOpAlphaFA", (int)BlendOp.Max);
             }
             if(renderingMode == RenderingMode.Fur || renderingMode == RenderingMode.FurCutout || renderingMode == RenderingMode.FurTwoPass)
             {
@@ -309,14 +317,14 @@ namespace lilToon
                 material.SetInt("_FurColorMask", 15);
                 material.SetInt("_FurSrcBlendAlpha", (int)UnityEngine.Rendering.BlendMode.One);
                 material.SetInt("_FurDstBlendAlpha", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
-                material.SetInt("_FurBlendOp", (int)UnityEngine.Rendering.BlendOp.Add);
-                material.SetInt("_FurBlendOpAlpha", (int)UnityEngine.Rendering.BlendOp.Add);
+                material.SetInt("_FurBlendOp", (int)BlendOp.Add);
+                material.SetInt("_FurBlendOpAlpha", (int)BlendOp.Add);
                 material.SetInt("_FurSrcBlendFA", (int)UnityEngine.Rendering.BlendMode.One);
                 material.SetInt("_FurDstBlendFA", (int)UnityEngine.Rendering.BlendMode.One);
                 material.SetInt("_FurSrcBlendAlphaFA", (int)UnityEngine.Rendering.BlendMode.Zero);
                 material.SetInt("_FurDstBlendAlphaFA", (int)UnityEngine.Rendering.BlendMode.One);
-                material.SetInt("_FurBlendOpFA", (int)UnityEngine.Rendering.BlendOp.Max);
-                material.SetInt("_FurBlendOpAlphaFA", (int)UnityEngine.Rendering.BlendOp.Max);
+                material.SetInt("_FurBlendOpFA", (int)BlendOp.Max);
+                material.SetInt("_FurBlendOpAlphaFA", (int)BlendOp.Max);
             }
         }
 
@@ -327,7 +335,7 @@ namespace lilToon
 
         private static void FixTransparentRenderQueue(Material material, RenderingMode renderingMode)
         {
-            #if VRC_SDK_VRCSDK3 && UDON
+            #if LILTOON_VRCSDK3_WORLDS
                 if( renderingMode == RenderingMode.Transparent ||
                     renderingMode == RenderingMode.Refraction ||
                     renderingMode == RenderingMode.RefractionBlur ||
@@ -385,6 +393,7 @@ namespace lilToon
 
             SetShaderKeywords(material, "UNITY_UI_ALPHACLIP",                   tpmode == 1);
             SetShaderKeywords(material, "UNITY_UI_CLIP_RECT",                   tpmode == 2 || tpmode == 4);
+            SetShaderKeywords(material, "ETC1_EXTERNAL_ALPHA",                  tpmode == 1 && material.GetFloat("_UseDither") == 1.0f);
             material.SetShaderPassEnabled("ShadowCaster",                       material.GetFloat("_AsOverlay") == 0.0f);
             material.SetShaderPassEnabled("DepthOnly",                          material.GetFloat("_AsOverlay") == 0.0f);
             material.SetShaderPassEnabled("DepthNormals",                       material.GetFloat("_AsOverlay") == 0.0f);
@@ -447,12 +456,10 @@ namespace lilToon
 
             if(isRefr || isFur || isGem)
             {
-                SetShaderKeywords(material, "ETC1_EXTERNAL_ALPHA",                  false);
                 SetShaderKeywords(material, "_DETAIL_MULX2",                        false);
             }
             else
             {
-                SetShaderKeywords(material, "ETC1_EXTERNAL_ALPHA",                  false);
                 SetShaderKeywords(material, "_DETAIL_MULX2",                        isOutl && material.GetVector("_OutlineTexHSVG") != lilConstants.defaultHSVG);
             }
 
@@ -604,7 +611,7 @@ namespace lilToon
 
         public static void RemoveShaderKeywords(Material material)
         {
-            foreach(string keyword in material.shaderKeywords)
+            foreach(var keyword in material.shaderKeywords)
             {
                 material.DisableKeyword(keyword);
             }

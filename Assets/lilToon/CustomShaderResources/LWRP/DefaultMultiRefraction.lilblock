@@ -2,6 +2,7 @@
     {
         Tags {*LIL_SUBSHADER_TAGS*}
         HLSLINCLUDE
+            *LIL_SRP_VERSION*
             #pragma target 3.5
             #pragma fragmentoption ARB_precision_hint_fastest
             #define LIL_REFRACTION
@@ -26,6 +27,7 @@
             #define LIL_MULTI_INPUTS_DISTANCE_FADE
             #define LIL_MULTI_INPUTS_AUDIOLINK
             #define LIL_MULTI_INPUTS_DISSOLVE
+            #define LIL_MULTI_INPUTS_IDMASK
 
             #pragma lil_skip_variants_decals
             #pragma lil_skip_variants_addlightshadows

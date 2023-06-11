@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text;
 using UnityEditor;
 using UnityEngine;
@@ -22,20 +23,8 @@ namespace lilToon
                 var dicD = new Dictionary<string, STProp>();
                 var dicF = new Dictionary<string, FloatProp>();
                 var dicC = new Dictionary<string, ColorProp>();
-
-                // Get materials
-                foreach(var material in materials)
-                {
-                    CheckMaterial(material, dicT, dicD, dicF, dicC);
-                }
-
-                // Get animations
-                foreach(var clip in clips)
-                {
-                    CheckAnimationClip(clip, dicT, dicD, dicF, dicC);
-                }
-
-                // Apply
+                CheckMaterials(materials, dicT, dicD, dicF, dicC);
+                CheckAnimationClips(clips, dicT, dicD, dicF, dicC);
                 RewriteInputHLSL(dicT, dicD, dicF, dicC);
             }
             catch(Exception e)
@@ -53,20 +42,8 @@ namespace lilToon
                 var dicD = new Dictionary<string, STProp>();
                 var dicF = new Dictionary<string, FloatProp>();
                 var dicC = new Dictionary<string, ColorProp>();
-
-                // Get materials
-                foreach(var material in materials)
-                {
-                    CheckMaterial(material, dicT, dicD, dicF, dicC);
-                }
-
-                // Get animations
-                foreach(var clip in clips)
-                {
-                    CheckAnimationClip(clip, dicT, dicD, dicF, dicC);
-                }
-
-                // Apply
+                CheckMaterials(materials, dicT, dicD, dicF, dicC);
+                CheckAnimationClips(clips, dicT, dicD, dicF, dicC);
                 return RewriteInputHLSLText(dicT, dicD, dicF, dicC);
             }
             catch(Exception e)
@@ -75,6 +52,11 @@ namespace lilToon
                 Debug.Log("[lilToon] OptimizeInputHLSL() failed");
                 return e.ToString();
             }
+        }
+
+        private static void CheckMaterials(IEnumerable<Material> materials, Dictionary<string, TexProp> dicT, Dictionary<string, STProp> dicD, Dictionary<string, FloatProp> dicF, Dictionary<string, ColorProp> dicC)
+        {
+            foreach(var m in materials) CheckMaterial(m, dicT, dicD, dicF, dicC);
         }
 
         private static void CheckMaterial(Material material, Dictionary<string, TexProp> dicT, Dictionary<string, STProp> dicD, Dictionary<string, FloatProp> dicF, Dictionary<string, ColorProp> dicC)
@@ -93,21 +75,18 @@ namespace lilToon
             Check(dicC, colors, material);
         }
 
+        private static void CheckAnimationClips(IEnumerable<AnimationClip> clips, Dictionary<string, TexProp> dicT, Dictionary<string, STProp> dicD, Dictionary<string, FloatProp> dicF, Dictionary<string, ColorProp> dicC)
+        {
+            foreach(var c in clips) CheckAnimationClip(c, dicT, dicD, dicF, dicC);
+        }
+
         private static void CheckAnimationClip(AnimationClip clip, Dictionary<string, TexProp> dicT, Dictionary<string, STProp> dicD, Dictionary<string, FloatProp> dicF, Dictionary<string, ColorProp> dicC)
         {
             if(clip == null) return;
-            foreach(EditorCurveBinding binding in AnimationUtility.GetObjectReferenceCurveBindings(clip))
-            {
-                foreach(ObjectReferenceKeyframe frame in AnimationUtility.GetObjectReferenceCurve(clip, binding))
-                {
-                    if(frame.value is Material) CheckMaterial((Material)frame.value, dicT, dicD, dicF, dicC);
-                }
-            }
+            CheckMaterials(AnimationUtility.GetObjectReferenceCurveBindings(clip).SelectMany(b => AnimationUtility.GetObjectReferenceCurve(clip, b)).Select(f => f.value as Material).Distinct(), dicT, dicD, dicF, dicC);
 
-            foreach(EditorCurveBinding binding in AnimationUtility.GetCurveBindings(clip))
+            foreach(var propname in AnimationUtility.GetCurveBindings(clip).Select(b => b.propertyName).Where(n => !string.IsNullOrEmpty(n) && n.Contains("material.")))
             {
-                string propname = binding.propertyName;
-                if(string.IsNullOrEmpty(propname) || !propname.Contains("material.")) continue;
                 if(propname.Contains("_ST."))
                 {
                     string name = propname.Substring(9, propname.Length - 14);
@@ -283,7 +262,7 @@ namespace lilToon
                     // Int
                     indI += TYPE_OFFSET;
                     string name = line.Substring(indI, indEND - indI);
-                    if(dicF.ContainsKey(name) && !dicF[name].isVariable)
+                    if(dicF.ContainsKey(name) && !dicF[name].isVariable && name != "_AlphaMaskMode")
                     {
                         sb.AppendLine(GetIndent(indI - 8) + "#define " + name + " (" + (uint)dicF[name].f + ")");
                         continue;
@@ -313,15 +292,20 @@ namespace lilToon
         private static bool ShouldLinear(Shader shader, string name)
         {
             if(PlayerSettings.colorSpace != ColorSpace.Linear) return false;
-            int id = shader.FindPropertyIndex(name);
-            if(id == -1) return false;
-            var flag = shader.GetPropertyFlags(id);
-            var type = shader.GetPropertyType(id);
-            if(type == UnityEngine.Rendering.ShaderPropertyType.Color)
-            {
-                return flag != UnityEngine.Rendering.ShaderPropertyFlags.HDR;
-            }
-            return flag == UnityEngine.Rendering.ShaderPropertyFlags.Gamma;
+            #if UNITY_2019_3_OR_NEWER
+                int id = shader.FindPropertyIndex(name);
+                if(id == -1) return false;
+                var flag = shader.GetPropertyFlags(id);
+                var type = shader.GetPropertyType(id);
+                if(type == UnityEngine.Rendering.ShaderPropertyType.Color)
+                {
+                    return flag != UnityEngine.Rendering.ShaderPropertyFlags.HDR;
+                }
+                return flag == UnityEngine.Rendering.ShaderPropertyFlags.Gamma;
+            #else
+                //int id = shader.PropertyToID(name);
+                return false;
+            #endif
         }
 
         internal static void ResetInputHLSL()

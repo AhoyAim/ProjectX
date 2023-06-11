@@ -2,6 +2,7 @@
     {
         Tags {*LIL_SUBSHADER_TAGS*}
         HLSLINCLUDE
+            *LIL_SRP_VERSION*
             #pragma target 3.5
             #pragma fragmentoption ARB_precision_hint_fastest
             #define LIL_MULTI
@@ -25,6 +26,8 @@
             #define LIL_MULTI_INPUTS_DISTANCE_FADE
             #define LIL_MULTI_INPUTS_AUDIOLINK
             #define LIL_MULTI_INPUTS_DISSOLVE
+            #define LIL_MULTI_INPUTS_DITHER
+            #define LIL_MULTI_INPUTS_IDMASK
             #define LIL_MULTI_INPUTS_OUTLINE
 
             #pragma lil_skip_variants_decals
@@ -76,6 +79,7 @@
             // AlphaMask and Dissolve
             #pragma shader_feature_local _COLOROVERLAY_ON
             #pragma shader_feature_local GEOM_TYPE_BRANCH_DETAIL
+            #pragma shader_feature_local ETC1_EXTERNAL_ALPHA
 
             // Main
             #pragma shader_feature_local EFFECT_HUE_VARIATION
@@ -142,6 +146,12 @@
             // AlphaMask and Dissolve
             #pragma shader_feature_local _COLOROVERLAY_ON
             #pragma shader_feature_local GEOM_TYPE_BRANCH_DETAIL
+            #pragma shader_feature_local ETC1_EXTERNAL_ALPHA
+
+            // Main
+            #pragma shader_feature_local _COLORADDSUBDIFF_ON
+            #pragma shader_feature_local _COLORCOLOR_ON
+            #pragma shader_feature_local _FADING_ON
 
             // Replace keywords
             #include "Includes/lil_replace_keywords.hlsl"
@@ -184,6 +194,12 @@
             // AlphaMask and Dissolve
             #pragma shader_feature_local _COLOROVERLAY_ON
             #pragma shader_feature_local GEOM_TYPE_BRANCH_DETAIL
+            #pragma shader_feature_local ETC1_EXTERNAL_ALPHA
+
+            // Main
+            #pragma shader_feature_local _COLORADDSUBDIFF_ON
+            #pragma shader_feature_local _COLORCOLOR_ON
+            #pragma shader_feature_local _FADING_ON
 
             // Replace keywords
             #include "Includes/lil_replace_keywords.hlsl"

@@ -179,6 +179,13 @@ float4 frag(v2f input LIL_VFACE(facing)) : SV_Target
         #endif
 
         //------------------------------------------------------------------------------------------------------------------------------
+        // Dither
+        BEFORE_DITHER
+        #if defined(LIL_FEATURE_DITHER) && LIL_RENDER == 1
+            OVERRIDE_DITHER
+        #endif
+
+        //------------------------------------------------------------------------------------------------------------------------------
         // Alpha
         #if LIL_RENDER == 0
             // Opaque
@@ -235,6 +242,27 @@ float4 frag(v2f input LIL_VFACE(facing)) : SV_Target
         OVERRIDE_MAIN
 
         //------------------------------------------------------------------------------------------------------------------------------
+        // Layer Color
+        #if defined(LIL_V2F_TANGENT_WS)
+            fd.isRightHand = input.tangentWS.w > 0.0;
+        #endif
+        // 2nd
+        BEFORE_MAIN2ND
+        #if defined(LIL_FEATURE_MAIN2ND)
+            float main2ndDissolveAlpha = 0.0;
+            float4 color2nd = 1.0;
+            OVERRIDE_MAIN2ND
+        #endif
+
+        // 3rd
+        BEFORE_MAIN3RD
+        #if defined(LIL_FEATURE_MAIN3RD)
+            float main3rdDissolveAlpha = 0.0;
+            float4 color3rd = 1.0;
+            OVERRIDE_MAIN3RD
+        #endif
+
+        //------------------------------------------------------------------------------------------------------------------------------
         // Alpha Mask
         BEFORE_ALPHAMASK
         #if defined(LIL_FEATURE_ALPHAMASK) && LIL_RENDER != 0
@@ -250,12 +278,22 @@ float4 frag(v2f input LIL_VFACE(facing)) : SV_Target
         #endif
 
         //------------------------------------------------------------------------------------------------------------------------------
+        // Dither
+        BEFORE_DITHER
+        #if defined(LIL_FEATURE_DITHER) && LIL_RENDER == 1
+            OVERRIDE_DITHER
+        #endif
+
+        //------------------------------------------------------------------------------------------------------------------------------
         // Alpha
         #if LIL_RENDER == 0
             // Opaque
             fd.col.a = 1.0;
         #elif LIL_RENDER == 1
             // Cutout
+            #if defined(LIL_FEATURE_DITHER)
+                if(!_UseDither)
+            #endif
             fd.col.a = saturate((fd.col.a - _Cutoff) / max(fwidth(fd.col.a), 0.0001) + 0.5);
             if(fd.col.a == 0) discard;
         #elif LIL_RENDER == 2 && !defined(LIL_REFRACTION)
@@ -337,27 +375,6 @@ float4 frag(v2f input LIL_VFACE(facing)) : SV_Target
         BEFORE_AUDIOLINK
         #if defined(LIL_FEATURE_AUDIOLINK)
             OVERRIDE_AUDIOLINK
-        #endif
-
-        //------------------------------------------------------------------------------------------------------------------------------
-        // Layer Color
-        #if defined(LIL_V2F_TANGENT_WS)
-            fd.isRightHand = input.tangentWS.w > 0.0;
-        #endif
-        // 2nd
-        BEFORE_MAIN2ND
-        #if defined(LIL_FEATURE_MAIN2ND)
-            float main2ndDissolveAlpha = 0.0;
-            float4 color2nd = 1.0;
-            OVERRIDE_MAIN2ND
-        #endif
-
-        // 3rd
-        BEFORE_MAIN3RD
-        #if defined(LIL_FEATURE_MAIN3RD)
-            float main3rdDissolveAlpha = 0.0;
-            float4 color3rd = 1.0;
-            OVERRIDE_MAIN3RD
         #endif
 
         //------------------------------------------------------------------------------------------------------------------------------

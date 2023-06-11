@@ -3,6 +3,10 @@
 // This is included in the subpass fragment shader
 #define LIL_ALPHA_PS
 #if LIL_RENDER > 0
+    #if defined(LIL_V2F_POSITION_WS)
+        LIL_GET_POSITION_WS_DATA(input,fd);
+    #endif
+
     #if defined(LIL_OUTLINE)
         BEFORE_ANIMATE_OUTLINE_UV
         OVERRIDE_ANIMATE_OUTLINE_UV
@@ -19,6 +23,27 @@
     #else
         BEFORE_MAIN
         OVERRIDE_MAIN
+    #endif
+
+    //------------------------------------------------------------------------------------------------------------------------------
+    // Layer Color
+    #if defined(LIL_V2F_TANGENT_WS)
+        fd.isRightHand = input.tangentWS.w > 0.0;
+    #endif
+    // 2nd
+    BEFORE_MAIN2ND
+    #if defined(LIL_FEATURE_MAIN2ND)
+        float main2ndDissolveAlpha = 0.0;
+        float4 color2nd = 1.0;
+        OVERRIDE_MAIN2ND
+    #endif
+
+    // 3rd
+    BEFORE_MAIN3RD
+    #if defined(LIL_FEATURE_MAIN3RD)
+        float main3rdDissolveAlpha = 0.0;
+        float4 color3rd = 1.0;
+        OVERRIDE_MAIN3RD
     #endif
 
     //------------------------------------------------------------------------------------------------------------------------------
@@ -41,6 +66,13 @@
     BEFORE_FUR
     #if defined(LIL_FUR) && defined(LIL_V2F_FURLAYER)
         OVERRIDE_FUR
+    #endif
+
+    //------------------------------------------------------------------------------------------------------------------------------
+    // Dither
+    BEFORE_DITHER
+    #if !defined(LIL_LITE) && defined(LIL_FEATURE_DITHER) && LIL_RENDER == 1
+        OVERRIDE_DITHER
     #endif
 
     //------------------------------------------------------------------------------------------------------------------------------

@@ -7,6 +7,7 @@ using System.IO;
 using System.Collections;
 using System.Reflection;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace lilToon
 {
@@ -29,26 +30,27 @@ namespace lilToon
             {
                 File.Create(lilDirectoryManager.startupTempPath);
 
+                #if LILTOON_DISABLE_ASSET_MODIFICATION == false
                 #if !SYSTEM_DRAWING
                     string editorPath = lilDirectoryManager.GetEditorPath();
 
                     // RSP
                     if(!File.Exists(lilDirectoryManager.rspPath))
                     {
-                        StreamWriter sw = new StreamWriter(lilDirectoryManager.rspPath,true);
+                        var sw = new StreamWriter(lilDirectoryManager.rspPath,true);
                         sw.Write("-r:System.Drawing.dll" + Environment.NewLine + "-define:SYSTEM_DRAWING");
                         sw.Close();
                         AssetDatabase.Refresh();
                         AssetDatabase.ImportAsset(editorPath);
                     }
 
-                    StreamReader sr = new StreamReader(lilDirectoryManager.rspPath);
+                    var sr = new StreamReader(lilDirectoryManager.rspPath);
                     string s = sr.ReadToEnd();
                     sr.Close();
 
                     if(!s.Contains("r:System.Drawing.dll"))
                     {
-                        StreamWriter sw = new StreamWriter(lilDirectoryManager.rspPath,true);
+                        var sw = new StreamWriter(lilDirectoryManager.rspPath,true);
                         sw.Write(Environment.NewLine + "-r:System.Drawing.dll");
                         sw.Close();
                         AssetDatabase.Refresh();
@@ -56,13 +58,14 @@ namespace lilToon
                     }
                     if(!s.Contains("define:SYSTEM_DRAWING"))
                     {
-                        StreamWriter sw = new StreamWriter(lilDirectoryManager.rspPath,true);
+                        var sw = new StreamWriter(lilDirectoryManager.rspPath,true);
                         sw.Write(Environment.NewLine + "-define:SYSTEM_DRAWING");
                         sw.Close();
                         AssetDatabase.Refresh();
                         AssetDatabase.ImportAsset(editorPath);
                     }
                 #endif
+                #endif //LILTOON_DISABLE_ASSET_MODIFICATION
             }
 
             //------------------------------------------------------------------------------------------------------------------------------
@@ -70,7 +73,7 @@ namespace lilToon
             string currentRPPath = lilDirectoryManager.GetCurrentRPPath();
             if(File.Exists(currentRPPath))
             {
-                StreamReader srRP = new StreamReader(currentRPPath);
+                var srRP = new StreamReader(currentRPPath);
                 string shaderRP = srRP.ReadLine();
                 string shaderAPI = srRP.ReadLine();
                 srRP.Close();
@@ -78,7 +81,7 @@ namespace lilToon
                 bool shouldRewrite = false;
                 string projectRP = lilRenderPipelineReader.GetRP().ToString();
                 string projectAPI = SystemInfo.graphicsDeviceType.ToString();
-                StreamWriter swRP = new StreamWriter(currentRPPath,false);
+                var swRP = new StreamWriter(currentRPPath,false);
                 swRP.WriteLine(projectRP);
                 swRP.WriteLine(projectAPI);
 
@@ -136,10 +139,8 @@ namespace lilToon
                 #if UNITY_2019_4_OR_NEWER
                     // Update custom shaders
                     var folders = new List<string>();
-                    foreach(string shaderGuid in AssetDatabase.FindAssets("t:shader"))
+                    foreach(var shaderPath in lilDirectoryManager.FindAssetsPath("t:shader").Where(p => p.Contains(".lilcontainer")))
                     {
-                        string shaderPath = lilDirectoryManager.GUIDToPath(shaderGuid);
-                        if(!shaderPath.Contains(".lilcontainer")) continue;
                         string folder = Path.GetDirectoryName(shaderPath);
                         if(folders.Contains(folder)) continue;
                         var shader = AssetDatabase.LoadAssetAtPath<Shader>(shaderPath);
@@ -151,7 +152,7 @@ namespace lilToon
                         ) continue;
                         folders.Add(folder);
                     }
-                    foreach(string folder in folders)
+                    foreach(var folder in folders)
                     {
                         AssetDatabase.ImportAsset(folder, ImportAssetOptions.ImportRecursive);
                     }
@@ -178,7 +179,7 @@ namespace lilToon
                     if(!webRequest.isNetworkError)
                 #endif
                 {
-                    StreamWriter sw = new StreamWriter(lilDirectoryManager.versionInfoTempPath,false);
+                    var sw = new StreamWriter(lilDirectoryManager.versionInfoTempPath,false);
                     sw.Write(webRequest.downloadHandler.text);
                     sw.Close();
                 }
@@ -187,9 +188,8 @@ namespace lilToon
 
         private static void MigrateMaterials()
         {
-            foreach(string guid in AssetDatabase.FindAssets("t:material"))
+            foreach(var material in lilDirectoryManager.FindAssets<Material>("t:material"))
             {
-                Material material = AssetDatabase.LoadAssetAtPath<Material>(lilDirectoryManager.GUIDToPath(guid));
                 MigrateMaterial(material);
             }
             AssetDatabase.SaveAssets();
@@ -220,21 +220,31 @@ namespace lilToon
         private static void PackageVersionChecker(string packageName)
         {
             int indexlil = packageName.IndexOf("lilToon_");
+            if(indexlil < 0) indexlil = packageName.IndexOf("jp.lilxyzw.liltoon-");
             if(indexlil < 0) return;
+
+            if(lilDirectoryManager.GetSettingLockPath().Contains("Packages"))
+            {
+                if(!EditorUtility.DisplayDialog("lilToon", lilLanguageManager.GetLoc("sDialogImportPackage"), lilLanguageManager.GetLoc("sYes"), lilLanguageManager.GetLoc("sNo")))
+                {
+                    CoroutineHandler.StartStaticCoroutine(ClosePackageImportWindow());
+                    return;
+                }
+            }
+
             string packageVerString = packageName.Substring(indexlil + 8);
 
-            int[] semPackage = ReadSemVer(packageVerString);
-            int[] semCurrent = ReadSemVer(lilConstants.currentVersionName);
+            var semPackage = new SemVerParser(packageVerString, true);
+            var semCurrent = new SemVerParser(lilConstants.currentVersionName);
             if(semPackage == null || semCurrent == null) return;
 
-            if(
-                semPackage[0] < semCurrent[0] ||
-                semPackage[0] == semCurrent[0] && semPackage[1] < semCurrent[1] ||
-                semPackage[0] == semCurrent[0] && semPackage[1] == semCurrent[1] && semPackage[2] < semCurrent[2]
-            )
+            if(semPackage < semCurrent)
             {
-                if(EditorUtility.DisplayDialog("lilToon", lilLanguageManager.GetLoc("sDialogImportOldVer"), lilLanguageManager.GetLoc("sYes"), lilLanguageManager.GetLoc("sNo"))) return;
-                CoroutineHandler.StartStaticCoroutine(ClosePackageImportWindow());
+                if(!EditorUtility.DisplayDialog("lilToon", lilLanguageManager.GetLoc("sDialogImportOldVer"), lilLanguageManager.GetLoc("sYes"), lilLanguageManager.GetLoc("sNo")))
+                {
+                    CoroutineHandler.StartStaticCoroutine(ClosePackageImportWindow());
+                    return;
+                }
             }
         }
 
@@ -255,7 +265,7 @@ namespace lilToon
 
         private static int[] ReadSemVer(string sem)
         {
-            string[] parts = sem.Split('.');
+            var parts = sem.Split('.');
             if(parts.Length < 3) return null;
             int major, minor, patch;
             try
@@ -284,7 +294,7 @@ namespace lilToon
             {
                 if(m_Instance == null)
                 {
-                    GameObject o = new GameObject("CoroutineHandler")
+                    var o = new GameObject("CoroutineHandler")
                     {
                         hideFlags = HideFlags.HideAndDontSave
                     };

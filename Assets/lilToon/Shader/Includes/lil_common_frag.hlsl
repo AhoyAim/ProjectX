@@ -42,6 +42,10 @@
     #define BEFORE_DISSOLVE
 #endif
 
+#if !defined(BEFORE_DITHER)
+    #define BEFORE_DITHER
+#endif
+
 #if !defined(BEFORE_NORMAL_1ST)
     #define BEFORE_NORMAL_1ST
 #endif
@@ -508,6 +512,36 @@
 #endif
 
 //------------------------------------------------------------------------------------------------------------------------------
+// Dither
+#if !defined(OVERRIDE_DITHER)
+    #if !defined(SHADER_API_GLES)
+        #if defined(LIL_FEATURE_DISTANCE_FADE) && defined(LIL_PASS_SHADOWCASTER_INCLUDED)
+            #define OVERRIDE_DITHER \
+                if(_UseDither == 1) \
+                { \
+                    if(LIL_MATRIX_P._m33 == 0.0) lilDistanceFadeAlphaOnly(fd); \
+                    fd.col.a = fd.col.a >= (lilSamplePointRepeat(_DitherTex, input.positionCS.xy, _DitherTex_TexelSize.zw).r * 255 + 1) / (_DitherMaxValue+2); \
+                }
+        #elif defined(LIL_FEATURE_DISTANCE_FADE)
+            #define OVERRIDE_DITHER \
+                if(_UseDither == 1) \
+                { \
+                    lilDistanceFadeAlphaOnly(fd); \
+                    fd.col.a = fd.col.a >= (lilSamplePointRepeat(_DitherTex, input.positionCS.xy, _DitherTex_TexelSize.zw).r * 255 + 1) / (_DitherMaxValue+2); \
+                }
+        #else
+            #define OVERRIDE_DITHER \
+                if(_UseDither == 1) \
+                { \
+                    fd.col.a = fd.col.a >= (lilSamplePointRepeat(_DitherTex, input.positionCS.xy, _DitherTex_TexelSize.zw).r * 255 + 1) / (_DitherMaxValue+2); \
+                }
+        #endif
+    #else
+        #define OVERRIDE_DITHER
+    #endif
+#endif
+
+//------------------------------------------------------------------------------------------------------------------------------
 // Premultiply
 #if LIL_RENDER != 2
     #define LIL_PREMULTIPLY
@@ -611,7 +645,12 @@
             #if defined(LIL_FEATURE_AudioLinkMask)
                 if(_AudioLinkUVMode == 3 || _AudioLinkUVMode == 4)
                 {
-                    audioLinkMask = LIL_SAMPLE_2D(_AudioLinkMask, sampler_AudioLinkMask, fd.uvMain);
+                    float2 uvMask = fd.uvMain;
+                    if(_AudioLinkMask_UVMode == 1) uvMask = fd.uv1;
+                    if(_AudioLinkMask_UVMode == 2) uvMask = fd.uv2;
+                    if(_AudioLinkMask_UVMode == 3) uvMask = fd.uv3;
+                    uvMask = lilCalcUV(uvMask, _AudioLinkMask_ST, _AudioLinkMask_ScrollRotate);
+                    audioLinkMask = LIL_SAMPLE_2D(_AudioLinkMask, sampler_AudioLinkMask, uvMask);
                     audioLinkUV = _AudioLinkUVMode == 3 ? audioLinkMask.rg : float2(frac(audioLinkMask.g * 2.0), 4.5/4.0 + floor(audioLinkMask.g * 2.0)/4.0);
                 }
             #endif
@@ -667,7 +706,7 @@
 
 //------------------------------------------------------------------------------------------------------------------------------
 // Main 2nd
-#if defined(LIL_FEATURE_MAIN2ND) && defined(LIL_PASS_FORWARD_NORMAL_INCLUDED) && !defined(LIL_LITE)
+#if defined(LIL_FEATURE_MAIN2ND) && !defined(LIL_LITE)
     void lilGetMain2nd(inout lilFragData fd, inout float4 color2nd, inout float main2ndDissolveAlpha LIL_SAMP_IN_FUNC(samp))
     {
         #if !(defined(LIL_FEATURE_DECAL) && defined(LIL_FEATURE_ANIMATE_DECAL))
@@ -741,6 +780,16 @@
             #endif
             color2nd.a = lerp(color2nd.a, color2nd.a * saturate((fd.depth - _Main2ndDistanceFade.x) / (_Main2ndDistanceFade.y - _Main2ndDistanceFade.x)), _Main2ndDistanceFade.z);
             if(_Main2ndTex_Cull == 1 && fd.facing > 0 || _Main2ndTex_Cull == 2 && fd.facing < 0) color2nd.a = 0;
+            #if LIL_RENDER != 0
+                if(_Main2ndTexAlphaMode != 0)
+                {
+                    if(_Main2ndTexAlphaMode == 1) fd.col.a = color2nd.a;
+                    if(_Main2ndTexAlphaMode == 2) fd.col.a = fd.col.a * color2nd.a;
+                    if(_Main2ndTexAlphaMode == 3) fd.col.a = saturate(fd.col.a + color2nd.a);
+                    if(_Main2ndTexAlphaMode == 4) fd.col.a = saturate(fd.col.a - color2nd.a);
+                    color2nd.a = 1;
+                }
+            #endif
             fd.col.rgb = lilBlendColor(fd.col.rgb, color2nd.rgb, color2nd.a * _Main2ndEnableLighting, _Main2ndTexBlendMode);
         }
     }
@@ -753,7 +802,7 @@
 
 //------------------------------------------------------------------------------------------------------------------------------
 // Main 3rd
-#if defined(LIL_FEATURE_MAIN3RD) && defined(LIL_PASS_FORWARD_NORMAL_INCLUDED) && !defined(LIL_LITE)
+#if defined(LIL_FEATURE_MAIN3RD) && !defined(LIL_LITE)
     void lilGetMain3rd(inout lilFragData fd, inout float4 color3rd, inout float main3rdDissolveAlpha LIL_SAMP_IN_FUNC(samp))
     {
         #if !(defined(LIL_FEATURE_DECAL) && defined(LIL_FEATURE_ANIMATE_DECAL))
@@ -827,6 +876,16 @@
             #endif
             color3rd.a = lerp(color3rd.a, color3rd.a * saturate((fd.depth - _Main3rdDistanceFade.x) / (_Main3rdDistanceFade.y - _Main3rdDistanceFade.x)), _Main3rdDistanceFade.z);
             if(_Main3rdTex_Cull == 1 && fd.facing > 0 || _Main3rdTex_Cull == 2 && fd.facing < 0) color3rd.a = 0;
+            #if LIL_RENDER != 0
+                if(_Main3rdTexAlphaMode != 0)
+                {
+                    if(_Main3rdTexAlphaMode == 1) fd.col.a = color3rd.a;
+                    if(_Main3rdTexAlphaMode == 2) fd.col.a = fd.col.a * color3rd.a;
+                    if(_Main3rdTexAlphaMode == 3) fd.col.a = saturate(fd.col.a + color3rd.a);
+                    if(_Main3rdTexAlphaMode == 4) fd.col.a = saturate(fd.col.a - color3rd.a);
+                    color3rd.a = 1;
+                }
+            #endif
             fd.col.rgb = lilBlendColor(fd.col.rgb, color3rd.rgb, color3rd.a * _Main3rdEnableLighting, _Main3rdTexBlendMode);
         }
     }
@@ -1736,7 +1795,6 @@
             #if LIL_RENDER == 2 && !defined(LIL_REFRACTION)
                 emissionBlend *= fd.col.a;
             #endif
-            fd.emissionColor += emissionBlend * emissionColor.rgb;
             fd.col.rgb = lilBlendColor(fd.col.rgb, emissionColor.rgb, emissionBlend, _EmissionBlendMode);
         }
     }
@@ -1821,7 +1879,6 @@
             #if LIL_RENDER == 2 && !defined(LIL_REFRACTION)
                 emission2ndBlend *= fd.col.a;
             #endif
-            fd.emissionColor += emission2ndBlend * emission2ndColor.rgb;
             fd.col.rgb = lilBlendColor(fd.col.rgb, emission2ndColor.rgb, emission2ndBlend, _Emission2ndBlendMode);
         }
     }
@@ -1835,23 +1892,12 @@
 //------------------------------------------------------------------------------------------------------------------------------
 // Dissolve Add
 #if !defined(OVERRIDE_DISSOLVE_ADD)
-    #if LIL_RENDER == 2 && !defined(LIL_REFRACTION)
-        #define OVERRIDE_DISSOLVE_ADD \
-            fd.emissionColor += _DissolveColor.rgb * dissolveAlpha; \
-            fd.col.rgb += _DissolveColor.rgb * dissolveAlpha * fd.col.a;
-    #else
-        #define OVERRIDE_DISSOLVE_ADD \
-            fd.emissionColor += _DissolveColor.rgb * dissolveAlpha; \
-            fd.col.rgb += _DissolveColor.rgb * dissolveAlpha;
-    #endif
+    #define OVERRIDE_DISSOLVE_ADD \
+        fd.emissionColor += _DissolveColor.rgb * dissolveAlpha;
 #endif
 
 //------------------------------------------------------------------------------------------------------------------------------
 // Blend Emission
-#if !defined(OVERRIDE_BLEND_EMISSION)
-    #define OVERRIDE_BLEND_EMISSION
-#endif
-/*
 #if !defined(OVERRIDE_BLEND_EMISSION)
     #if LIL_RENDER == 2 && !defined(LIL_REFRACTION)
         #define OVERRIDE_BLEND_EMISSION \
@@ -1861,7 +1907,6 @@
             fd.col.rgb += fd.emissionColor;
     #endif
 #endif
-*/
 
 //------------------------------------------------------------------------------------------------------------------------------
 // Depth Fade
@@ -1899,21 +1944,44 @@
 //------------------------------------------------------------------------------------------------------------------------------
 // Distance Fade
 #if defined(LIL_FEATURE_DISTANCE_FADE) && !defined(LIL_LITE)
-    void lilDistanceFade(inout lilFragData fd)
+    void lilDistanceFadeAlphaOnly(inout lilFragData fd)
     {
-        float distFade = saturate((fd.depth - _DistanceFade.x) / (_DistanceFade.y - _DistanceFade.x));
+        float depth = _DistanceFadeMode ? fd.depthObject : fd.depth;
+        float distFade = saturate((depth - _DistanceFade.x) / (_DistanceFade.y - _DistanceFade.x));
         #if defined(LIL_OUTLINE) || defined(LIL_PASS_FORWARD_FUR_INCLUDED)
             distFade = distFade * _DistanceFade.z;
         #else
             distFade = fd.facing < (_DistanceFade.w-1.0) ? _DistanceFade.z : distFade * _DistanceFade.z;
         #endif
+        #if LIL_RENDER == 1
+            fd.col.a = lerp(fd.col.a, fd.col.a * _DistanceFadeColor.a, distFade);
+        #endif
+    }
+
+    void lilDistanceFade(inout lilFragData fd)
+    {
+        float depth = _DistanceFadeMode ? fd.depthObject : fd.depth;
+        float distFade = saturate((depth - _DistanceFade.x) / (_DistanceFade.y - _DistanceFade.x));
+        #if defined(LIL_OUTLINE) || defined(LIL_PASS_FORWARD_FUR_INCLUDED)
+            distFade = distFade * _DistanceFade.z;
+        #else
+            distFade = fd.facing < (_DistanceFade.w-1.0) ? _DistanceFade.z : distFade * _DistanceFade.z;
+        #endif
+
+        float3 fadeColor = _DistanceFadeColor.rgb;
+        #if defined(LIL_V2F_NORMAL_WS)
+            float nvabs = abs(dot(fd.origN,fd.headV));
+            float fadeRim = pow(saturate(1.0 - nvabs), _DistanceFadeRimFresnelPower);
+            fadeColor = lerp(fadeColor, _DistanceFadeRimColor.rgb * fd.col.rgb, fadeRim * _DistanceFadeRimColor.a);
+        #endif
+
         #if defined(LIL_PASS_FORWARDADD)
             fd.col.rgb = lerp(fd.col.rgb, 0.0, distFade);
         #elif LIL_RENDER == 2
-            fd.col.rgb = lerp(fd.col.rgb, _DistanceFadeColor.rgb * _DistanceFadeColor.a, distFade);
+            fd.col.rgb = lerp(fd.col.rgb, fadeColor * _DistanceFadeColor.a, distFade);
             fd.col.a = lerp(fd.col.a, fd.col.a * _DistanceFadeColor.a, distFade);
         #else
-            fd.col.rgb = lerp(fd.col.rgb, _DistanceFadeColor.rgb, distFade);
+            fd.col.rgb = lerp(fd.col.rgb, fadeColor, distFade);
         #endif
     }
 #endif
