@@ -31,7 +31,10 @@ public class TestUI : MonoBehaviour
     private void OnGUI()
     {
         GuiSetup();
-        GUI.Box(new Rect(10, 10, 150, 150), "残り", boxStyle);
-        GUI.Label(new Rect(50, 75, 150, 150), (pantsStorage.goalPantsCount - pantsCalc.storeragedPantsCount).ToString(), labelStyle);
+        GUI.Box(new Rect(10, 10, 150, 150), "納品残り", boxStyle);
+        GUI.Label(new Rect(50, 75, 150, 150), (pantsStorage.goalPantsCount - pantsCalc.storagedPantsCount).ToString(), labelStyle);
+
+        GUI.Box(new Rect(10+190, 10, 150, 150), "所持シャツ", boxStyle);
+        GUI.Label(new Rect(50+190, 75, 150, 150), pantsCalc.carryPantsCount.ToString(), labelStyle);
     }
 }

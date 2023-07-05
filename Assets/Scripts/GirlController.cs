@@ -18,7 +18,9 @@ public class GirlController : MonoBehaviour, IDamageable
         Notice,
         Runaway,
         Approch,
+        ApprochToFreePants,
         Attack,
+        GetFreePants,
         Damaged,
         Stan,
         Vacuumed,
@@ -43,7 +45,12 @@ public class GirlController : MonoBehaviour, IDamageable
     public float stanTime = 2f;
     [Space(10)]
     public Transform bodyTransform;
-    
+    [Space(10)]
+    public FreePants lockOn_freePants_obj;
+    public Transform lockOn_freePants_transform;
+    public bool lockOn_freePants_flag = false;// trueのときフリーパンツを追える状態。
+
+
 
     private const RigidbodyConstraints a = RigidbodyConstraints.None;
     private CapsuleCollider girlCollider;
@@ -58,6 +65,7 @@ public class GirlController : MonoBehaviour, IDamageable
     private int animIDBlowAway;
     private int animIDDamaged;
     private int animIDAttack;
+    private int animIDGetFreePants;
     private int animIDNotice;
     private int animIDStan;
     private float girlColliderRdius;
@@ -90,6 +98,7 @@ public class GirlController : MonoBehaviour, IDamageable
         animIDBlowAway = Animator.StringToHash("BlowAway");
         animIDDamaged = Animator.StringToHash("Damaged");
         animIDAttack = Animator.StringToHash("Attack");
+        animIDGetFreePants = Animator.StringToHash("GetFreePants");
         animIDNotice = Animator.StringToHash("Notice");
         animIDStan = Animator.StringToHash("Stan");
         vaccumedableDistance = pantsGetter.vaccumableDistance;
@@ -126,8 +135,16 @@ public class GirlController : MonoBehaviour, IDamageable
                 OnApproch();
                 break;
 
+            case State.ApprochToFreePants:
+                OnApprochToFreePants();
+                break;
+
             case State.Attack:
                 OnAttack();
+                break;
+
+            case State.GetFreePants:
+                OnGetFreePants();
                 break;
 
             case State.Vacuumed:
@@ -188,8 +205,14 @@ public class GirlController : MonoBehaviour, IDamageable
             case State.Approch:
                 animator.SetBool(animIDNavmeshAgent, true);
                 break;
+            case State.ApprochToFreePants:
+                animator.SetBool(animIDNavmeshAgent, true);
+                break;
             case State.Attack:
                 animator.SetBool(animIDAttack, true);
+                break;
+            case State.GetFreePants:
+                animator.SetBool(animIDGetFreePants, true);
                 break;
             case State.Damaged:
                 animator.SetBool(animIDDamaged, true);
@@ -258,6 +281,31 @@ public class GirlController : MonoBehaviour, IDamageable
     bool CheckAttackable()
     {
         if ((playerTransform.position - girlTransform.position).sqrMagnitude < atttackableDistance * atttackableDistance)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+    /// <summary>
+    /// Freepansとgirlの距離により入手可能か判断する。他のGirlが先にFreePantsをゲットしてしまったときlockOn_freePants_flag = falseする
+    /// </summary>
+    /// <returns></returns>
+    bool CheckFreePantsGettable()
+    {
+        if(lockOn_freePants_obj == null)// 他のGirlが先にFreePantsに到達し、Destroy()したとき
+        {
+            lockOn_freePants_flag = false;
+            return false;
+        }
+        else if(lockOn_freePants_obj.isDestroy)// 他のGirlが先にFreePantsに到達し、Destroy()したとき
+        {
+            lockOn_freePants_flag = false;
+            return false;
+        }
+        else if ((lockOn_freePants_transform.position - girlTransform.position).sqrMagnitude < atttackableDistance * atttackableDistance)
         {
             return true;
         }
@@ -471,7 +519,11 @@ public class GirlController : MonoBehaviour, IDamageable
             navMeshAgent.destination = GetSamplePointNavMesh();
         }
         // 次のステートに遷移できないかチェック
-        if (CheckNoticeable())
+        if(lockOn_freePants_flag)
+        {
+            ChangeState(State.ApprochToFreePants);
+        }
+        else if (CheckNoticeable())
         {
             girlTransform.LookAt(playerTransform.position);
             ChangeState(State.Notice);
@@ -548,7 +600,11 @@ public class GirlController : MonoBehaviour, IDamageable
         navMeshAgent.destination = playerTransform.position;
 
         // 次のステートに遷移できないかチェック
-        if (CheckAttackable())
+        if (lockOn_freePants_flag)
+        {
+            ChangeState(State.ApprochToFreePants);
+        }
+        else if (CheckAttackable())
         {
             ChangeState(State.Attack);
         }
@@ -575,6 +631,40 @@ public class GirlController : MonoBehaviour, IDamageable
         }
     }
     /// <summary>
+    /// ApprochToFreePantsステート時のNavMeshAgentの立ち振る舞い
+    /// </summary>
+    public void OnApprochToFreePants()
+    {
+        TeardownVacuumed();
+        if (!animator.GetBool(animIDNavmeshAgent))
+        {
+            animator.SetBool(animIDNavmeshAgent, true);
+        }
+        navMeshAgent.speed = runSpeed;
+        animator.SetFloat(animIDIsNaked, 1);
+        animator.SetFloat(animIDSpeed, navMeshAgent.velocity.magnitude, 0.25f, Time.deltaTime);
+        navMeshAgent.stoppingDistance = approchDistance;
+        if(lockOn_freePants_obj != null && !lockOn_freePants_obj.isDestroy)
+        {
+            navMeshAgent.destination = lockOn_freePants_transform.position;
+        }
+        
+
+        // 次のステートに遷移できないかチェック
+        if (CheckFreePantsGettable())
+        {
+            ChangeState(State.GetFreePants);
+        }
+        else
+        {
+            if(!lockOn_freePants_flag)
+            {
+                ChangeState(State.Approch);
+            }
+        }
+        
+    }
+    /// <summary>
     ///  Attackステート時の立ち振る舞い
     /// </summary>
     void OnAttack()
@@ -596,7 +686,13 @@ public class GirlController : MonoBehaviour, IDamageable
             ChangeState(State.Approch);
         }
     }
-
+    void OnGetFreePants()
+    {
+        if (animator.GetCurrentAnimatorStateInfo(0).IsName("Normal"))
+        {
+            currentState = State.Normal;
+        }
+    }
     /// <summary>
     /// Vacuumedステート時の立ち振る舞い
     /// </summary>
@@ -800,5 +896,24 @@ public class GirlController : MonoBehaviour, IDamageable
         {
             DamageBehaviour(direction);
         }
+    }
+
+    public void GetFreePants()
+    {
+        if(lockOn_freePants_obj == null)
+        {
+            return;
+        }
+        if(!lockOn_freePants_obj.isDestroy)
+        {
+            lockOn_freePants_flag = false;
+            lockOn_freePants_obj.isDestroy = true;
+            Destroy(lockOn_freePants_obj.gameObject);
+            animator.SetFloat(animIDIsNaked, 0);
+
+            isNaked = false;
+            UpdatePants();
+        }
+        
     }
 }

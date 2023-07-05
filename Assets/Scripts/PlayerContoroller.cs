@@ -18,6 +18,7 @@ using DG.Tweening;
 public class PlayerContoroller : MonoBehaviour, IDamageable
 {
     public PantsGetter pantsGetter;
+    public GameObject freePantsPrefab;
     public enum State
     {
         Normal,
@@ -641,6 +642,12 @@ public class PlayerContoroller : MonoBehaviour, IDamageable
     {
         Debug.Log("ぎゃーーーーー");
         transform.LookAt(transform.position + direction);
+        int lostPantsAmount = GetComponent<PantsCalc>().LostPants();
+        for(int i = 0; i < lostPantsAmount; i++)
+        {
+            Vector3 dir = Quaternion.Euler(0, Random.Range(0, 360), 0) * Vector3.forward; 
+            Instantiate(freePantsPrefab, transform.position, Quaternion.identity).GetComponent<Rigidbody>().AddForce(dir * Random.Range(3,5) + Vector3.up*5, ForceMode.Impulse);
+        }
 
         pantsGetter.VacuumingFails();
 

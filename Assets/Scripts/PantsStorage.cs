@@ -17,7 +17,7 @@ public class PantsStorage : MonoBehaviour
         {
             pantsCalc.StoragePants();
             
-            if(goalPantsCount == pantsCalc.StoragedPantsCount)
+            if(goalPantsCount == pantsCalc.storagedPantsCount)
             {
                 Debug.Log("ÉSÅ[Éã");
             }
